@@ -19,8 +19,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Allow through
-  return NextResponse.next()
+  // x-pathname 헤더를 layout에 전달 (GNB 표시 여부 판단용)
+  const response = NextResponse.next();
+  response.headers.set('x-pathname', pathname);
+  return response;
 }
 
 export const config = {
