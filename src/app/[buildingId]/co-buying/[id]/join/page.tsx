@@ -1,44 +1,137 @@
 'use client';
 
-import { useState, use } from 'react';
+import { useState, use, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
+import { createClient } from '@/lib/supabase/client';
 
-// Dummy options
-const options = [
-  { id: 'opt1', name: '참외 3kg (10과 내외)', price: 20000, max: 5 },
-  { id: 'opt2', name: '참외 5kg (15과 내외)', price: 32000, max: 2 },
-];
+interface ProductOption {
+  id: string;
+  name: string;
+  price: number;
+  remain_quantity: number | null;
+  quantity: number;
+}
 
 export default function JoinCoBuying({ params }: { params: Promise<{ buildingId: string, id: string }> }) {
   const { buildingId, id: coBuyingId } = use(params);
   const router = useRouter();
-  const [quantities, setQuantities] = useState<Record<string, number>>({
-    opt1: 0,
-    opt2: 0,
-  });
+  const supabase = createClient();
+  
+  const [options, setOptions] = useState<ProductOption[]>([]);
+  const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fetch real options from Supabase
+  useEffect(() => {
+    async function fetchOptions() {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('product_options')
+          .select('*')
+          .eq('co_buying_id', coBuyingId);
+
+        if (error) throw error;
+        
+        if (data) {
+          setOptions(data);
+          // Initialize quantities
+          const initialQtys: Record<string, number> = {};
+          data.forEach(opt => {
+            initialQtys[opt.id] = 0;
+          });
+          setQuantities(initialQtys);
+        }
+      } catch (err) {
+        console.error('Error fetching options:', err);
+        alert('옵션 정보를 불러오는 데 실패했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchOptions();
+  }, [coBuyingId, supabase]);
 
   const handleMinus = (id: string) => {
     setQuantities(prev => ({ ...prev, [id]: Math.max(0, prev[id] - 1) }));
   };
 
-  const handlePlus = (id: string, max: number) => {
-    setQuantities(prev => ({ ...prev, [id]: Math.min(max, prev[id] + 1) }));
+  const handlePlus = (id: string, max: number | null) => {
+    const limit = max === null ? 999 : max;
+    setQuantities(prev => ({ ...prev, [id]: Math.min(limit, prev[id] + 1) }));
   };
 
   const totalPay = options.reduce((sum, opt) => sum + (quantities[opt.id] * opt.price), 0);
   const totalCount = Object.values(quantities).reduce((a,b) => a+b, 0);
 
-  const handleSubmit = () => {
-    // 실제 DB 연동 구문 (users 확인 후 joiners, joiner_product_details insert)
+  const handleSubmit = async () => {
     if (totalCount === 0) {
       alert('옵션을 한 개 이상 선택해주세요.');
       return;
     }
 
-    alert('참여가 완료되었습니다!');
-    router.push(`/${buildingId}/co-buying/${coBuyingId}`);
+    setIsSubmitting(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert('로그인이 필요합니다.');
+        router.push('/login');
+        return;
+      }
+
+      // 1. Create a Joiner record
+      const { data: joinerData, error: joinerError } = await supabase
+        .from('joiners')
+        .insert({
+          user_id: user.id,
+          co_buying_id: coBuyingId,
+          joiner_total_pay: totalPay,
+          joiner_total_quantity: totalCount,
+          pay_status: 'UNPAID'
+        })
+        .select()
+        .single();
+
+      if (joinerError) throw joinerError;
+
+      // 2. Create Joiner Product Details
+      const detailsToInsert = options
+        .filter(opt => quantities[opt.id] > 0)
+        .map(opt => ({
+          joiner_id: joinerData.id,
+          product_option_id: opt.id,
+          joiner_quantity: quantities[opt.id]
+        }));
+
+      const { error: detailsError } = await supabase
+        .from('joiner_product_details')
+        .insert(detailsToInsert);
+
+      if (detailsError) throw detailsError;
+
+      alert('참여가 완료되었습니다!');
+      router.push(`/${buildingId}/co-buying/${coBuyingId}`);
+    } catch (err: any) {
+      console.error('Error joining co-buying:', err);
+      if (err.code === '23505') {
+        alert('이미 참여 중인 공구입니다.');
+      } else {
+        alert('참여 신청 중 오류가 발생했습니다. 다시 시도해주세요.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-white">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col flex-1 h-screen bg-white">
@@ -64,20 +157,24 @@ export default function JoinCoBuying({ params }: { params: Promise<{ buildingId:
               </div>
               
               <div className="flex justify-between items-center mt-2">
-                <span className="text-xs text-red-500 font-medium bg-red-50 px-2 py-0.5 rounded">잔여 {opt.max}개</span>
+                <span className="text-xs text-red-500 font-medium bg-red-50 px-2 py-0.5 rounded">
+                  잔여 {opt.remain_quantity !== null ? `${opt.remain_quantity}개` : '무제한'}
+                </span>
                 
                 {/* Counter */}
                 <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden h-9">
                   <button 
                     onClick={() => handleMinus(opt.id)}
                     className="w-9 h-full flex items-center justify-center text-gray-600 bg-gray-50 hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                    disabled={isSubmitting}
                   >
                     -
                   </button>
                   <span className="w-10 text-center text-sm font-semibold">{quantities[opt.id]}</span>
                   <button 
-                    onClick={() => handlePlus(opt.id, opt.max)}
+                    onClick={() => handlePlus(opt.id, opt.remain_quantity)}
                     className="w-9 h-full flex items-center justify-center text-gray-600 bg-gray-50 hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                    disabled={isSubmitting}
                   >
                     +
                   </button>
@@ -85,6 +182,9 @@ export default function JoinCoBuying({ params }: { params: Promise<{ buildingId:
               </div>
             </div>
           ))}
+          {options.length === 0 && (
+            <p className="text-center text-gray-500 py-10">등록된 옵션이 없습니다.</p>
+          )}
         </div>
       </div>
 
@@ -94,8 +194,8 @@ export default function JoinCoBuying({ params }: { params: Promise<{ buildingId:
           <div className="text-sm text-gray-500 mb-0.5">총 결제예정금액</div>
           <div className="text-2xl font-bold text-gray-900">₩{totalPay.toLocaleString()}</div>
         </div>
-        <Button onClick={handleSubmit} size="lg" className="w-32 rounded-xl" disabled={totalCount === 0}>
-          신청하기
+        <Button onClick={handleSubmit} size="lg" className="w-32 rounded-xl" disabled={totalCount === 0 || isSubmitting}>
+          {isSubmitting ? '신청 중...' : '신청하기'}
         </Button>
       </div>
     </div>
