@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { CoBuyingCard } from '@/components/CoBuyingCard';
-import { mockCoBuyings } from '@/lib/mock-data';
+import { BottomNav } from '@/components/BottomNav';
 
 export default async function Home() {
   const supabase = await createClient();
@@ -57,22 +57,24 @@ export default async function Home() {
               title={item.title}
               category={item.category}
               status={item.status}
-              totalQuantity={item.total_quantity} // DB 필드명 일치
-              currentQuantity={12} // DB 필드상 현재 수량 집계가 없으므로 임시 더미
+              totalQuantity={item.total_quantity}
+              currentQuantity={0} 
               deadline={item.deadline}
-              thumbnailUrl={'https://images.unsplash.com/photo-1590481845199-3543ebce321f?q=80&w=2670&auto=format&fit=crop'} // 더미이미지
+              thumbnailUrl={'https://images.unsplash.com/photo-1590481845199-3543ebce321f?q=80&w=2670&auto=format&fit=crop'} 
             />
           ))
         )}
       </div>
 
       {/* Floating Action Button (Write) */}
-      <button className="absolute bottom-6 right-4 w-14 h-14 bg-black text-white rounded-full flex items-center justify-center shadow-lg hover:bg-gray-800 transition-colors">
+      <button className="absolute bottom-20 right-4 w-14 h-14 bg-black text-white rounded-full flex items-center justify-center shadow-lg hover:bg-gray-800 transition-colors z-30">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <line x1="12" y1="5" x2="12" y2="19" />
           <line x1="5" y1="12" x2="19" y2="12" />
         </svg>
       </button>
+
+      <BottomNav />
     </div>
   );
 }
