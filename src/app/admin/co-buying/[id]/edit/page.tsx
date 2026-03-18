@@ -107,9 +107,29 @@ export default function EditCoBuyingPage({ params }: { params: Promise<{ id: str
     }
   };
 
+  const addOption = () => {
+    setFormData({
+      ...formData,
+      options: [...formData.options, { id: '', name: '', quantity: 1 }],
+    });
+  };
 
-  const calculatedFee = formData.feeType === 'manual' ? formData.manualFee : Math.floor(formData.price * formData.feeType);
+  const removeOption = (index: number) => {
+    if (formData.options.length <= 1) return;
+    const newOptions = [...formData.options];
+    newOptions.splice(index, 1);
+    setFormData({ ...formData, options: newOptions });
+  };
+
+  const updateOption = (index: number, field: string, value: string | number) => {
+    const newOptions = [...formData.options];
+    newOptions[index] = { ...newOptions[index], [field]: value };
+    setFormData({ ...formData, options: newOptions });
+  };
+
+  const calculatedFee = formData.feeType === 'manual' ? formData.manualFee : Math.floor(formData.price * (formData.feeType as number));
   const totalQuantity = formData.options.reduce((sum, opt) => sum + opt.quantity, 0);
+  const participantQuantity = totalQuantity - formData.hostQuantity;
   const unitPrice = formData.price + calculatedFee;
 
   const handleSubmit = async () => {
@@ -119,8 +139,8 @@ export default function EditCoBuyingPage({ params }: { params: Promise<{ id: str
       if (formData.image) {
         const fileExt = formData.image.name.split('.').pop();
         const fileName = `${Date.now()}.${fileExt}`;
-        await supabase.storage.from('cobuying-images').upload(fileName, formData.image);
-        const { data: { publicUrl } } = supabase.storage.from('cobuying-images').getPublicUrl(fileName);
+        await supabase.storage.from('co-buying-images').upload(fileName, formData.image);
+        const { data: { publicUrl } } = supabase.storage.from('co-buying-images').getPublicUrl(fileName);
         imageUrl = publicUrl;
       }
 
@@ -233,17 +253,99 @@ export default function EditCoBuyingPage({ params }: { params: Promise<{ id: str
           <Button className="w-full h-14 rounded-2xl font-bold mt-4" onClick={handleNext}>다음</Button>
         </div>
       ) : (
-        <div className="p-5 flex flex-col gap-6">
-          {/* Reuse registration logic for Step 2 UI here - keeping it concise */}
-          {/* (Skipping internal Step 2 detail for brevity in this tool call, assumed implementation complete) */}
-          <section>
-             <label className="block text-sm font-bold text-gray-900 mb-2">마감일</label>
-             <Input type="datetime-local" value={formData.deadline} onChange={(e) => setFormData({ ...formData, deadline: e.target.value })} />
+        <div className="p-5 flex flex-col gap-8">
+          {/* Step 2 Content restored from registration page */}
+          <section className="flex flex-col gap-4">
+            <div>
+              <label className="block text-sm font-bold text-gray-900 mb-2">정가(원)</label>
+              <Input
+                type="number"
+                placeholder="0"
+                value={formData.price}
+                onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-900 mb-2">수고비 설정</label>
+              <Input
+                type="number"
+                placeholder="금액 직접 입력"
+                value={formData.manualFee}
+                onChange={(e) => setFormData({ ...formData, manualFee: Number(e.target.value), feeType: 'manual' })}
+              />
+              <div className="mt-2 text-[13px] text-gray-400 flex justify-between">
+                <span>적용된 수고비</span>
+                <span className="font-bold text-gray-900">₩{calculatedFee.toLocaleString()}</span>
+              </div>
+            </div>
           </section>
 
-          <div className="bg-gray-50 p-4 rounded-2xl mb-4">
-             <p className="text-sm text-gray-500">총 {totalQuantity}개 옵션 구성</p>
-          </div>
+          <section>
+            <label className="block text-sm font-bold text-gray-900 mb-2">단위</label>
+            <Input
+              placeholder="예) 개, g, L"
+              value={formData.unit}
+              onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+            />
+          </section>
+
+          <section className="flex flex-col gap-4">
+            <label className="block text-sm font-bold text-gray-900 flex justify-between items-center">
+              옵션별 수량
+              <button onClick={addOption} className="text-blue-500 text-xs flex items-center gap-1">
+                + 옵션 추가
+              </button>
+            </label>
+            {formData.options.map((opt, idx) => (
+              <div key={idx} className="flex items-center gap-3">
+                <Input
+                  placeholder="옵션명"
+                  className="flex-1"
+                  value={opt.name}
+                  onChange={(e) => updateOption(idx, 'name', e.target.value)}
+                />
+                <Input
+                  type="number"
+                  className="w-20"
+                  value={opt.quantity}
+                  onChange={(e) => updateOption(idx, 'quantity', Number(e.target.value))}
+                />
+                {formData.options.length > 1 && (
+                  <button onClick={() => removeOption(idx)} className="text-gray-400">삭제</button>
+                )}
+              </div>
+            ))}
+          </section>
+
+          <section className="flex flex-col gap-4 bg-gray-50 p-4 rounded-2xl">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-bold text-gray-900">주최자 수량</span>
+              <Input
+                type="number"
+                className="w-20"
+                value={formData.hostQuantity}
+                onChange={(e) => setFormData({ ...formData, hostQuantity: Number(e.target.value) })}
+              />
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-bold text-gray-900">최소 성사 수량</span>
+              <Input
+                type="number"
+                className="w-20"
+                value={formData.minQuantity}
+                onChange={(e) => setFormData({ ...formData, minQuantity: Number(e.target.value) })}
+              />
+            </div>
+          </section>
+
+          <section>
+            <label className="block text-sm font-bold text-gray-900 mb-2">마감일</label>
+            <Input
+              type="datetime-local"
+              value={formData.deadline}
+              onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
+            />
+          </section>
 
           <Button className="w-full h-14 rounded-2xl font-bold" onClick={handleSubmit} disabled={isSubmitting}>
             {isSubmitting ? '저장 중...' : '저장하기'}

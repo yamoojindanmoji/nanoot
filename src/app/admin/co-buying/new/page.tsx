@@ -123,19 +123,22 @@ export default function NewCoBuyingPage() {
         const fileExt = formData.image.name.split('.').pop();
         const fileName = `${Date.now()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
-          .from('cobuying-images')
+          .from('co-buying-images')
           .upload(fileName, formData.image);
 
         if (uploadError) throw uploadError;
         
         const { data: { publicUrl } } = supabase.storage
-          .from('cobuying-images')
+          .from('co-buying-images')
           .getPublicUrl(fileName);
         
         imageUrl = publicUrl;
       }
 
-      // 2. Insert Co-buying
+      // 2. Get User
+      const { data: { user } } = await supabase.auth.getUser();
+
+      // 3. Insert Co-buying
       const { data: cb, error: cbError } = await supabase
         .from('co_buyings')
         .insert({
@@ -146,7 +149,8 @@ export default function NewCoBuyingPage() {
           total_quantity: totalQuantity,
           deadline: formData.deadline,
           building_id: formData.buildingId,
-          image_url: imageUrl, // Note: I assume this column exists now or will be added
+          image_url: imageUrl,
+          creator_id: user?.id,
         })
         .select()
         .single();
