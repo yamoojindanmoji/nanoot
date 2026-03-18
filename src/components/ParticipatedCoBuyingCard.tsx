@@ -14,6 +14,7 @@ export interface ParticipatedCoBuyingCardProps {
   myQuantity: number;
   myTotalPay: number;
   remainingQuantity?: number;
+  quantityLabel?: string;
 }
 
 const statusConfig: Record<string, { label: string; description: string; colorClass: string }> = {
@@ -62,60 +63,62 @@ export function ParticipatedCoBuyingCard({
   myQuantity,
   myTotalPay,
   remainingQuantity,
+  quantityLabel = '신청',
 }: ParticipatedCoBuyingCardProps) {
   const config = statusConfig[status] || { label: status, description: '', colorClass: 'bg-gray-100 text-gray-700' };
   
   // Custom description for RECRUITING if remainingQuantity provided
   const description = (status === 'RECRUITING' && remainingQuantity !== undefined)
-    ? `다른 신청자들을 모집하고 있어요. 모집 완료까지 남은 수량 ${remainingQuantity}개 남았어요!`
+    ? `다른 신청자들을 모집하고 있어요. 모집 완료까지 ${remainingQuantity}개 남았어요!`
     : config.description;
 
   return (
-    <div className="bg-white border-b border-gray-100 p-5 flex flex-col">
-      <div className="flex gap-4">
+    <div className="bg-white px-5 py-6 mb-2 flex flex-col group cursor-pointer border-b border-gray-100 last:border-0 relative">
+      <Link href={`/my/co-buying/${id}`} className="absolute inset-0 z-0" />
+      
+      <div className="flex gap-4 mb-4 relative z-10 pointer-events-none">
         {/* Thumbnail */}
-        <div className="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0 flex items-center justify-center">
+        <div className="w-20 h-20 rounded-2xl bg-gray-100 border border-black/5 overflow-hidden flex-shrink-0 flex items-center justify-center relative">
           {thumbnailUrl ? (
-            <Image src={thumbnailUrl} alt={title} width={64} height={64} className="w-full h-full object-cover" />
+            <Image src={thumbnailUrl} alt={title} fill className="object-cover" sizes="80px" />
           ) : (
-            <span className="text-gray-400 text-xs text-center">No Image</span>
+            <span className="text-gray-400 text-[10px] text-center">No Image</span>
           )}
         </div>
 
         {/* Info */}
-        <div className="flex flex-col flex-1 gap-1">
-          <div className="flex justify-between items-start">
-            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${config.colorClass}`}>
+        <div className="flex flex-col flex-1 justify-center gap-1.5">
+          <div className="flex justify-between items-center">
+            <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold w-fit ${config.colorClass}`}>
               {config.label}
             </span>
+            <span className="text-[12px] font-bold text-red-500">입금마감: 오늘</span>
           </div>
-          <h3 className="font-bold text-[15px] leading-tight text-gray-900 line-clamp-2">
+          <h3 className="font-bold text-[16px] leading-snug text-gray-900 line-clamp-2">
             {title}
           </h3>
+          <div className="text-[13px] text-gray-500 font-medium mt-0.5">
+            {myTotalPay.toLocaleString()}원 · {myQuantity}개 {quantityLabel}
+          </div>
         </div>
       </div>
 
       {/* Timeline */}
-      <div className="mt-2 px-1">
+      <div className="px-2 mb-2 relative z-10 pointer-events-none">
         <CoBuyingTimeline status={status} />
       </div>
 
       {/* Status Guide Text */}
-      <p className={`text-[12px] leading-normal font-medium mb-4 ${
-        status === 'RECRUITING_FAILED' || status === 'CANCELLED' ? 'text-red-500' : 'text-[#84CC16]'
-      }`}>
-        {description}
-      </p>
+      <div className="bg-gray-50 rounded-xl p-3 mb-4 relative z-10 pointer-events-none">
+        <p className="text-[13px] leading-snug font-medium text-gray-600">
+          {description}
+        </p>
+      </div>
 
-      <div className="bg-gray-50 rounded-lg p-3 flex justify-between items-center">
-        <div className="flex flex-col gap-0.5">
-           <span className="text-[11px] text-gray-400 font-medium">내 신청 내역</span>
-           <span className="text-[13px] font-bold text-gray-700">
-             {myQuantity}개 / ₩{myTotalPay.toLocaleString()}
-           </span>
-        </div>
-        <Link href={`/my/co-buying/${id}`}>
-           <Button variant="outline" size="sm" className="h-8 text-[12px] font-bold border-gray-200 text-gray-600 bg-white hover:bg-gray-50">
+      {/* Button */}
+      <div className="relative z-10">
+        <Link href={`/my/co-buying/${id}`} className="w-full">
+           <Button className="w-full h-[52px] rounded-[16px] font-bold text-[15px] bg-[#84CC16] hover:bg-[#65A30D] text-white transition-colors">
              자세히 보기
            </Button>
         </Link>
@@ -123,4 +126,3 @@ export function ParticipatedCoBuyingCard({
     </div>
   );
 }
-
