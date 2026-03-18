@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { createClient } from '@/lib/supabase/server';
 import { CoBuyingCard } from '@/components/CoBuyingCard';
 import { BottomNav } from '@/components/BottomNav';
