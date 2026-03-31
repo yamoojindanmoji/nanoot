@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
+import { JoinBottomSheetClient } from './JoinBottomSheetClient';
 
 export default async function CoBuyingDetail({ params }: { params: Promise<{ buildingId: string, id: string }> }) {
   const { buildingId, id } = await params;
@@ -38,6 +39,11 @@ export default async function CoBuyingDetail({ params }: { params: Promise<{ bui
     currentQuantity,
     thumbnailUrl: detailData.image_url || '',
   };
+
+  const { data: options } = await supabase
+    .from('product_options')
+    .select('*')
+    .eq('co_buying_id', id);
 
   // Calculate progress
   const progressPercent = Math.min(100, Math.floor((detail.currentQuantity / detail.totalQuantity) * 100));
@@ -160,18 +166,15 @@ export default async function CoBuyingDetail({ params }: { params: Promise<{ bui
       </div>
 
       {/* ---------- 7. 하단 플로팅 참여 버튼 ---------- */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[440px] bg-white border-t border-gray-100 p-4 pb-8 flex items-center justify-between z-30 shadow-[0_-10px_30px_-15px_rgba(0,0,0,0.15)]">
-        <div className="flex flex-col">
-          <span className="text-[12px] text-gray-400 mb-0.5">최저 신청금액</span>
-          <span className="text-[20px] font-bold text-gray-900">20,000원<span className="text-[14px] font-normal text-gray-500 ml-1">부터</span></span>
+      {detail.status === 'RECRUITING' ? (
+        <JoinBottomSheetClient coBuyingId={id} buildingId={buildingId} options={options || []} />
+      ) : (
+        <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[440px] bg-white border-t border-gray-100 p-4 pb-8 z-30 flex items-center justify-center shadow-[0_-10px_30px_-15px_rgba(0,0,0,0.15)]">
+           <div className="w-full h-[52px] bg-gray-200 text-gray-500 rounded-xl font-bold text-[16px] flex items-center justify-center">
+             모집이 마감되었습니다
+           </div>
         </div>
-        <Link
-          href={`/${buildingId}/co-buying/${id}/join`}
-          className="w-[180px] h-[52px] bg-black text-white rounded-xl font-bold flex items-center justify-center hover:bg-gray-800 transition-all shadow-md active:scale-95"
-        >
-          참여하기
-        </Link>
-      </div>
+      )}
     </div>
   );
 }

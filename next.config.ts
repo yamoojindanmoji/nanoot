@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
       { hostname: 'i.pravatar.cc' },
       { hostname: 'images.unsplash.com' },
       { hostname: '*.supabase.co' },
+      { hostname: 'www.coupang.com' },
+      { hostname: '*.coupangcdn.com' },
     ],
   },
 };
