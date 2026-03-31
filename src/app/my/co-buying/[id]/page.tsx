@@ -4,10 +4,12 @@ import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ParticipatedDetailClient } from './ParticipatedDetailClient';
+import { HostedDetailClient } from './HostedDetailClient';
 import Image from 'next/image';
 
-export default async function ParticipatedDetail({ params }: { params: Promise<{ id: string }> }) {
+export default async function DetailPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<{ from?: string }> }) {
   const { id } = await params;
+  const { from } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -15,28 +17,11 @@ export default async function ParticipatedDetail({ params }: { params: Promise<{
     return null;
   }
 
-  // Fetch cobuying info and joiner details
+  // 1. Fetch co-buying info first
   const { data: detailData, error: detailError } = await supabase
     .from('co_buyings')
-    .select(`
-      *,
-      creator:creator_id (name, nickname),
-      joiners!inner (
-        id,
-        user_id,
-        joiner_product_details (
-          id,
-          joiner_quantity,
-          product_options (
-            id,
-            name,
-            price
-          )
-        )
-      )
-    `)
+    .select(`*`)
     .eq('id', id)
-    .eq('joiners.user_id', user.id)
     .single();
 
   if (detailError || !detailData) {
@@ -44,55 +29,144 @@ export default async function ParticipatedDetail({ params }: { params: Promise<{
     notFound();
   }
 
-  const joiner = detailData.joiners[0];
-  const joinerDetails = joiner.joiner_product_details;
+  // If user explicitly navigated from the 'participated' tab, show participated view even if creator
+  const isCreator = detailData.creator_id === user.id && from !== 'participated';
 
-  // Fetch all joiner counts for this cobuying to calculate remaining quantity
+  // Calculate generic quantities for both views
   const { data: allJoiners } = await supabase
     .from('joiners')
-    .select('joiner_total_quantity')
+    .select(`
+      id,
+      joiner_total_quantity,
+      joiner_total_pay,
+      pay_status,
+      user_id,
+      users (
+        name,
+        nickname,
+        profile_image_url
+      ),
+      joiner_product_details (
+        joiner_quantity,
+        product_options (
+          name,
+          price
+        )
+      )
+    `)
     .eq('co_buying_id', id);
-  
+    
   const currentTotalQuantity = allJoiners?.reduce((sum, j) => sum + j.joiner_total_quantity, 0) || 0;
   const remainingQuantity = Math.max(0, detailData.total_quantity - currentTotalQuantity);
-
-  interface JoinerDetail {
-    id: string;
-    joiner_quantity: number;
-    product_options: {
-      id: string;
-      name: string;
-      price: number;
-      remain_quantity?: number;
-    };
-  }
-
-  // Format the data for the client component
-  const initialDetails = (joinerDetails as unknown as JoinerDetail[]).map((detail) => ({
-    id: detail.id,
-    optionId: detail.product_options.id,
-    name: detail.product_options.name,
-    price: detail.product_options.price,
-    quantity: detail.joiner_quantity,
-    maxAvailable: detail.joiner_quantity + (detail.product_options.remain_quantity ?? remainingQuantity), 
-  }));
 
   const coBuyingInfo = {
     id: detailData.id,
     title: detailData.title,
-    status: detailData.status as 'RECRUITING' | 'PAYMENT_WAITING' | 'ORDER_IN_PROGRESS' | 'READY_FOR_PICKUP' | 'COMPLETED' | 'CANCELLED' | 'RECRUITING_FAILED',
+    status: detailData.status,
+    totalPrice: detailData.total_price || 0,
     totalQuantity: detailData.total_quantity,
     currentQuantity: currentTotalQuantity,
     remainingQuantity: remainingQuantity,
     deadline: detailData.deadline,
     category: detailData.category,
-    thumbnailUrl: 'https://images.unsplash.com/photo-1590481845199-3543ebce321f?q=80&w=2670&auto=format&fit=crop',
+    thumbnailUrl: detailData.image_url || 'https://images.unsplash.com/photo-1590481845199-3543ebce321f?q=80&w=2670&auto=format&fit=crop',
     buildingId: detailData.building_id
   };
 
+  if (isCreator) {
+    // Hosted View
+    const basePricePerItem = detailData.total_price ? (detailData.total_price / detailData.total_quantity) : 0;
+
+    const joinersList = allJoiners?.map((j: any) => {
+      const userObj = Array.isArray(j.users) ? j.users[0] : j.users;
+      const opts = (j.joiner_product_details || []).map((detail: any) => {
+        const optPrice = detail.product_options?.price !== undefined && detail.product_options?.price !== null
+          ? detail.product_options.price
+          : basePricePerItem;
+        return {
+          optionName: detail.product_options?.name || '기본 상품',
+          quantity: detail.joiner_quantity,
+          totalPrice: Math.round(detail.joiner_quantity * optPrice)
+        };
+      });
+
+      const calculatedTotalPay = opts.length > 0 
+        ? opts.reduce((sum: number, opt: any) => sum + opt.totalPrice, 0)
+        : Math.round(j.joiner_total_quantity * basePricePerItem);
+
+      return {
+        id: j.id,
+        userId: j.user_id,
+        name: userObj?.nickname || userObj?.name || '알 수 없음',
+        profileImageUrl: userObj?.profile_image_url || null,
+        totalQuantity: j.joiner_total_quantity,
+        totalPay: j.joiner_total_pay || calculatedTotalPay,
+        payStatus: (j.pay_status || 'UNPAID') as 'PAID' | 'UNPAID',
+        options: opts,
+      };
+    }) || [];
+
+    return (
+      <div className="flex flex-col flex-1 bg-gray-50 min-h-screen relative">
+        <HostedDetailClient coBuyingInfo={coBuyingInfo as any} joinersList={joinersList} />
+      </div>
+    );
+  }
+
+  // Participated View
+  const { data: userJoiner, error: joinerError } = await supabase
+    .from('joiners')
+    .select(`
+      id,
+      user_id,
+      joiner_total_quantity,
+      joiner_total_pay,
+      joiner_product_details (
+        id,
+        joiner_quantity,
+        product_options (
+          id,
+          name,
+          price,
+          remain_quantity
+        )
+      )
+    `)
+    .eq('co_buying_id', id)
+    .eq('user_id', user.id)
+    .single();
+
+  if (joinerError || !userJoiner) {
+    console.error('Fetch joiner error:', joinerError);
+    notFound();
+  }
+
+  const joinerDetails = (userJoiner as any).joiner_product_details as any[];
+  const basePricePerItem = detailData.total_price ? (detailData.total_price / detailData.total_quantity) : 0;
+
+  // If product options exist, map them; otherwise create a fallback single line from joiner totals
+  const initialDetails = joinerDetails && joinerDetails.length > 0
+    ? joinerDetails.map((detail: any) => ({
+        id: detail.id,
+        optionId: detail.product_options?.id ?? '',
+        name: detail.product_options?.name ?? '기본 상품',
+        price: detail.product_options?.price ?? basePricePerItem,
+        quantity: detail.joiner_quantity,
+        maxAvailable: detail.joiner_quantity + (detail.product_options?.remain_quantity ?? remainingQuantity),
+      }))
+    : (userJoiner as any).joiner_total_quantity > 0
+      ? [{
+          id: (userJoiner as any).id,
+          optionId: '',
+          name: '기본 상품',
+          price: basePricePerItem,
+          quantity: (userJoiner as any).joiner_total_quantity,
+          maxAvailable: (userJoiner as any).joiner_total_quantity + remainingQuantity,
+        }]
+      : [];
+
   return (
-    <div className="flex flex-col flex-1 pb-24 bg-gray-50 min-h-screen">
-      {/* Header */}
+    <div className="flex flex-col flex-1 pb-24 bg-gray-50 min-h-screen relative">
       <header className="sticky top-0 bg-white z-10 px-4 py-4 flex items-center justify-center border-b border-gray-100">
         <Link 
           href="/my/co-buying"
@@ -105,7 +179,6 @@ export default async function ParticipatedDetail({ params }: { params: Promise<{
         <h1 className="text-lg font-bold text-gray-900">참여한 공구 상세</h1>
       </header>
 
-      {/* Participated Co-Buying Summary */}
       <div className="bg-white p-5 flex gap-4 border-b border-gray-100">
         <div className="w-20 h-20 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
            <Image src={coBuyingInfo.thumbnailUrl} alt={coBuyingInfo.title} width={80} height={80} className="w-full h-full object-cover" />
@@ -123,11 +196,10 @@ export default async function ParticipatedDetail({ params }: { params: Promise<{
         </div>
       </div>
 
-      {/* Client Component for Interactive Details */}
       <ParticipatedDetailClient 
         initialDetails={initialDetails} 
-        coBuyingInfo={coBuyingInfo} 
-        joinerId={joiner.id}
+        coBuyingInfo={coBuyingInfo as any} 
+        joinerId={userJoiner.id}
       />
     </div>
   );

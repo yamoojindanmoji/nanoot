@@ -180,6 +180,7 @@ export default async function MyCoBuyingPage(props: PageProps) {
                     myTotalPay={item.myTotalPay}
                     remainingQuantity={item.remainingQuantity}
                     quantityLabel={item.quantityLabel}
+                    from={tab === 'participated' ? 'participated' : 'hosted'}
                   />
                 ))}
               </div>
@@ -202,6 +203,7 @@ export default async function MyCoBuyingPage(props: PageProps) {
                       myQuantity={item.myQuantity}
                       myTotalPay={item.myTotalPay}
                       quantityLabel={item.quantityLabel}
+                      from={tab === 'participated' ? 'participated' : 'hosted'}
                     />
                   ))}
                 </div>

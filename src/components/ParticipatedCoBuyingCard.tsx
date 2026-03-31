@@ -15,6 +15,7 @@ export interface ParticipatedCoBuyingCardProps {
   myTotalPay: number;
   remainingQuantity?: number;
   quantityLabel?: string;
+  from?: 'participated' | 'hosted';
 }
 
 const statusConfig: Record<string, { label: string; description: string; colorClass: string }> = {
@@ -64,8 +65,10 @@ export function ParticipatedCoBuyingCard({
   myTotalPay,
   remainingQuantity,
   quantityLabel = '신청',
+  from,
 }: ParticipatedCoBuyingCardProps) {
   const config = statusConfig[status] || { label: status, description: '', colorClass: 'bg-gray-100 text-gray-700' };
+  const detailHref = from ? `/my/co-buying/${id}?from=${from}` : `/my/co-buying/${id}`;
   
   // Custom description for RECRUITING if remainingQuantity provided
   const description = (status === 'RECRUITING' && remainingQuantity !== undefined)
@@ -74,7 +77,7 @@ export function ParticipatedCoBuyingCard({
 
   return (
     <div className="bg-white px-5 py-6 mb-2 flex flex-col group cursor-pointer border-b border-gray-100 last:border-0 relative">
-      <Link href={`/my/co-buying/${id}`} className="absolute inset-0 z-0" />
+      <Link href={detailHref} className="absolute inset-0 z-0" />
       
       <div className="flex gap-4 mb-4 relative z-10 pointer-events-none">
         {/* Thumbnail */}
@@ -117,7 +120,7 @@ export function ParticipatedCoBuyingCard({
 
       {/* Button */}
       <div className="relative z-10">
-        <Link href={`/my/co-buying/${id}`} className="w-full">
+        <Link href={detailHref} className="w-full">
            <Button className="w-full h-[52px] rounded-[16px] font-bold text-[15px] bg-[#84CC16] hover:bg-[#65A30D] text-white transition-colors">
              자세히 보기
            </Button>
