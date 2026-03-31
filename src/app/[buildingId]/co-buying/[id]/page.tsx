@@ -167,7 +167,12 @@ export default async function CoBuyingDetail({ params }: { params: Promise<{ bui
 
       {/* ---------- 7. 하단 플로팅 참여 버튼 ---------- */}
       {detail.status === 'RECRUITING' ? (
-        <JoinBottomSheetClient coBuyingId={id} buildingId={buildingId} options={options || []} />
+        <JoinBottomSheetClient 
+          coBuyingId={id} 
+          buildingId={buildingId} 
+          buildingName={building?.name}
+          options={options || []} 
+        />
       ) : (
         <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[440px] bg-white border-t border-gray-100 p-4 pb-8 z-30 flex items-center justify-center shadow-[0_-10px_30px_-15px_rgba(0,0,0,0.15)]">
            <div className="w-full h-[52px] bg-gray-200 text-gray-500 rounded-xl font-bold text-[16px] flex items-center justify-center">

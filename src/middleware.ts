@@ -34,7 +34,9 @@ export async function middleware(request: NextRequest) {
 
   // Protect internal routes, user must be logged in unless on public routes
   const publicRoutes = ['/', '/login', '/signup', '/auth/callback', '/building'];
-  const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith(route + '/'));
+  const isPublicRoute = 
+    publicRoutes.some(route => pathname === route || pathname.startsWith(route + '/')) ||
+    pathname.includes('/co-buying/');
 
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone()

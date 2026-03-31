@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { createClient } from '@/lib/supabase/client';
+import { LoginPromptModal } from '@/components/LoginPromptModal';
+import { VerificationRequiredModal } from '@/components/VerificationRequiredModal';
 
 export interface ProductOption {
   id: string;
@@ -15,22 +17,51 @@ export interface ProductOption {
 interface JoinBottomSheetClientProps {
   coBuyingId: string;
   buildingId: string;
+  buildingName?: string;
   options: ProductOption[];
 }
 
-export function JoinBottomSheetClient({ coBuyingId, buildingId, options }: JoinBottomSheetClientProps) {
+export function JoinBottomSheetClient({ coBuyingId, buildingId, buildingName, options }: JoinBottomSheetClientProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  
   const router = useRouter();
   const supabase = createClient();
 
-  const handleOpen = () => {
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      setUser(data.user);
+    };
+    checkUser();
+  }, [supabase]);
+
+  const handleOpen = async () => {
+    if (!user) {
+      setIsLoginModalOpen(true);
+      return;
+    }
+
+    // Check if building is verified for this user
+    const { data: profile } = await supabase
+      .from('users')
+      .select('building_id')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile?.building_id || profile.building_id !== buildingId) {
+      setIsVerifyModalOpen(true);
+      return;
+    }
+
     const initial: Record<string, number> = {};
     if (options.length > 0) {
       options.forEach(o => initial[o.id] = 0);
     } else {
-      // Fallback if no options exist, though realistically shouldn't happen based on the schema
       initial['default'] = 0;
     }
     setQuantities(initial);
@@ -63,14 +94,15 @@ export function JoinBottomSheetClient({ coBuyingId, buildingId, options }: JoinB
 
     setIsSubmitting(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        alert('로그인이 필요합니다.');
-        router.push('/login');
+      // Re-verify user just in case
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) {
+        setIsLoginModalOpen(true);
+        setIsSubmitting(false);
         return;
       }
 
-      // Check current available quantities and handle concurrent application
+      // Check current available quantities
       for (const opt of options) {
         if (opt.remain_quantity !== null && quantities[opt.id] > 0) {
           const { data: latestOpt } = await supabase
@@ -82,7 +114,6 @@ export function JoinBottomSheetClient({ coBuyingId, buildingId, options }: JoinB
           if (latestOpt && latestOpt.remain_quantity !== null && latestOpt.remain_quantity < quantities[opt.id]) {
             alert('신청 가능한 수량 정보가 변경되었습니다. 다시 확인해주세요.');
             handleClose();
-            // Refresh to get latest options
             window.location.reload();
             return;
           }
@@ -93,7 +124,7 @@ export function JoinBottomSheetClient({ coBuyingId, buildingId, options }: JoinB
       const { data: joinerData, error: joinerError } = await supabase
         .from('joiners')
         .insert({
-          user_id: user.id,
+          user_id: currentUser.id,
           co_buying_id: coBuyingId,
           joiner_total_pay: totalPay,
           joiner_total_quantity: totalCount,
@@ -131,7 +162,6 @@ export function JoinBottomSheetClient({ coBuyingId, buildingId, options }: JoinB
 
       alert('참여가 완료되었습니다!');
       handleClose();
-      // Redirect or reload page to show updated status
       window.location.reload();
     } catch (err: any) {
       console.error('Error joining co-buying:', err);
@@ -153,10 +183,23 @@ export function JoinBottomSheetClient({ coBuyingId, buildingId, options }: JoinB
         </Button>
       </div>
 
+      {/* Login Prompt Modal */}
+      <LoginPromptModal 
+        isOpen={isLoginModalOpen} 
+        onClose={() => setIsLoginModalOpen(false)} 
+      />
+
+      {/* Verification Required Modal */}
+      <VerificationRequiredModal
+        isOpen={isVerifyModalOpen}
+        onClose={() => setIsVerifyModalOpen(false)}
+        buildingId={buildingId}
+        buildingName={buildingName}
+      />
+
       {/* Bottom Sheet Overlay */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={handleClose}>
-          {/* Bottom Sheet Content */}
           <div 
             className="w-full max-w-[440px] bg-white rounded-t-3xl pt-8 pb-8 px-6 flex flex-col relative animate-in slide-in-from-bottom duration-300"
             onClick={e => e.stopPropagation()}
@@ -211,7 +254,6 @@ export function JoinBottomSheetClient({ coBuyingId, buildingId, options }: JoinB
               )}
             </div>
 
-            {/* Total Footer inside Bottom Sheet */}
             <div className="flex justify-between items-center mb-6 pt-4 border-t border-gray-100">
               <span className="text-[16px] font-bold text-gray-900">총 {totalCount}개</span>
               <span className="text-[18px] font-bold text-[#84CC16]">{totalPay.toLocaleString()}원</span>
@@ -230,3 +272,4 @@ export function JoinBottomSheetClient({ coBuyingId, buildingId, options }: JoinB
     </>
   );
 }
+

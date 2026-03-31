@@ -19,28 +19,27 @@ export async function GET(request: Request) {
         // Query user table to check if there is an existing profile
         const { data: profile } = await supabase
           .from('users')
-          .select('id, building_id')
+          .select('id, building_id, nickname')
           .eq('id', user.id)
           .single();
 
         if (!profile) {
           // If this is a new OAuth user, create their profile with default values extracted from the provider
-          // We assume google gives us email and full_name in user.user_metadata
           const name = user.user_metadata?.full_name || '사용자';
           const email = user.user_metadata?.email || user.email;
 
           await supabase.from('users').insert({
             id: user.id,
             name: name,
-            nickname: name, // Default nickname
+            nickname: name, // Default nickname initially
             email: email,
           });
 
-          // Needs building setup
-          return NextResponse.redirect(`${origin}/building/setup`)
-        } else if (!profile.building_id) {
-          // Has profile, but no building setup yet
-          return NextResponse.redirect(`${origin}/building/setup`)
+          // Redirect to profile setup
+          return NextResponse.redirect(`${origin}/auth/setup-profile`)
+        } else if (!profile.nickname || profile.nickname === '사용자') {
+          // Has profile but nickname is null or default, send to setup
+          return NextResponse.redirect(`${origin}/auth/setup-profile`)
         }
       }
 

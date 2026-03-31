@@ -1,121 +1,138 @@
-export const dynamic = 'force-dynamic';
+'use client';
 
-import { createClient } from '@/lib/supabase/server';
+import { useState, useEffect, Suspense } from 'react';
+import { createClient } from '@/lib/supabase/client';
 import { ParticipatedCoBuyingCard, ParticipatedCoBuyingCardProps } from '@/components/ParticipatedCoBuyingCard';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
-interface PageProps {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
-}
+function MyCoBuyingPageContent() {
+  const searchParams = useSearchParams();
+  const tab = searchParams.get('tab') || 'participated'; // 'participated' | 'hosted'
 
-export default async function MyCoBuyingPage(props: PageProps) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const [user, setUser] = useState<any>(null);
+  const [ongoingItems, setOngoingItems] = useState<any[]>([]);
+  const [finishedItems, setFinishedItems] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const ONGOING_STATUSES = ['RECRUITING', 'PAYMENT_WAITING', 'ORDER_IN_PROGRESS', 'READY_FOR_PICKUP'];
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
+      setUser(user);
+
+      if (tab === 'participated') {
+        const { data: participationData, error } = await supabase
+          .from('joiners')
+          .select(`
+            id,
+            joiner_total_pay,
+            joiner_total_quantity,
+            co_buyings (
+              id,
+              title,
+              status,
+              total_price,
+              total_quantity,
+              deadline,
+              image_url
+            )
+          `)
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (!error && participationData) {
+          const items = await Promise.all((participationData as any[]).map(async (p) => {
+            const cb = p.co_buyings;
+            if (!cb) return null;
+
+            const { data: allJoiners } = await supabase
+              .from('joiners')
+              .select('joiner_total_quantity')
+              .eq('co_buying_id', cb.id);
+            
+            const currentTotal = allJoiners?.reduce((sum: number, j: any) => sum + j.joiner_total_quantity, 0) || 0;
+            const remaining = Math.max(0, cb.total_quantity - currentTotal);
+
+            return {
+              id: cb.id,
+              title: cb.title,
+              status: cb.status,
+              myQuantity: p.joiner_total_quantity,
+              myTotalPay: p.joiner_total_pay,
+              remainingQuantity: remaining,
+              quantityLabel: '신청',
+              thumbnailUrl: cb.image_url || 'https://images.unsplash.com/photo-1590481845199-3543ebce321f?q=80&w=2670&auto=format&fit=crop',
+            };
+          }));
+
+          const filteredItems = items.filter((item): item is NonNullable<typeof item> => item !== null);
+          setOngoingItems(filteredItems.filter(item => ONGOING_STATUSES.includes(item.status)));
+          setFinishedItems(filteredItems.filter(item => !ONGOING_STATUSES.includes(item.status)));
+        }
+      } else if (tab === 'hosted') {
+        const { data: hostedData, error } = await supabase
+          .from('co_buyings')
+          .select(`
+            id,
+            title,
+            status,
+            total_price,
+            total_quantity,
+            deadline,
+            image_url
+          `)
+          .eq('creator_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (!error && hostedData) {
+          const items = await Promise.all((hostedData as any[]).map(async (cb) => {
+            const { data: allJoiners } = await supabase
+              .from('joiners')
+              .select('joiner_total_quantity, joiner_total_pay')
+              .eq('co_buying_id', cb.id);
+            
+            const currentTotalQuantity = allJoiners?.reduce((sum: number, j: any) => sum + j.joiner_total_quantity, 0) || 0;
+            const remaining = Math.max(0, cb.total_quantity - currentTotalQuantity);
+
+            return {
+              id: cb.id,
+              title: cb.title,
+              status: cb.status,
+              myQuantity: currentTotalQuantity,
+              myTotalPay: cb.total_price * currentTotalQuantity,
+              remainingQuantity: remaining,
+              quantityLabel: '모집',
+              thumbnailUrl: cb.image_url || 'https://images.unsplash.com/photo-1590481845199-3543ebce321f?q=80&w=2670&auto=format&fit=crop',
+            };
+          }));
+
+          const filteredItems = items.filter((item): item is NonNullable<typeof item> => item !== null);
+          setOngoingItems(filteredItems.filter(item => ONGOING_STATUSES.includes(item.status)));
+          setFinishedItems(filteredItems.filter(item => !ONGOING_STATUSES.includes(item.status)));
+        }
+      }
+      setIsLoading(false);
+    };
+
+    fetchData();
+  }, [tab]);
+
+  if (isLoading) {
+    return <div className="p-6">로딩 중...</div>;
+  }
 
   if (!user) {
     return null;
-  }
-
-  const searchParams = await props.searchParams;
-  const tab = searchParams.tab || 'participated'; // 'participated' | 'hosted'
-
-  let ongoingItems: any[] = [];
-  let finishedItems: any[] = [];
-  
-  const ONGOING_STATUSES = ['RECRUITING', 'PAYMENT_WAITING', 'ORDER_IN_PROGRESS', 'READY_FOR_PICKUP'];
-
-  if (tab === 'participated') {
-    const { data: participationData, error } = await supabase
-      .from('joiners')
-      .select(`
-        id,
-        joiner_total_pay,
-        joiner_total_quantity,
-        co_buyings (
-          id,
-          title,
-          status,
-          total_price,
-          total_quantity,
-          deadline,
-          image_url
-        )
-      `)
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-
-    if (!error && participationData) {
-      const items = await Promise.all((participationData as any[]).map(async (p) => {
-        const cb = p.co_buyings;
-        if (!cb) return null;
-
-        const { data: allJoiners } = await supabase
-          .from('joiners')
-          .select('joiner_total_quantity')
-          .eq('co_buying_id', cb.id);
-        
-        const currentTotal = allJoiners?.reduce((sum: number, j: any) => sum + j.joiner_total_quantity, 0) || 0;
-        const remaining = Math.max(0, cb.total_quantity - currentTotal);
-
-        return {
-          id: cb.id,
-          title: cb.title,
-          status: cb.status,
-          myQuantity: p.joiner_total_quantity,
-          myTotalPay: p.joiner_total_pay,
-          remainingQuantity: remaining,
-          quantityLabel: '신청',
-          thumbnailUrl: cb.image_url || 'https://images.unsplash.com/photo-1590481845199-3543ebce321f?q=80&w=2670&auto=format&fit=crop',
-        };
-      }));
-
-      const filteredItems = items.filter((item): item is NonNullable<typeof item> => item !== null);
-      ongoingItems = filteredItems.filter(item => ONGOING_STATUSES.includes(item.status));
-      finishedItems = filteredItems.filter(item => !ONGOING_STATUSES.includes(item.status));
-    }
-  } else if (tab === 'hosted') {
-    const { data: hostedData, error } = await supabase
-      .from('co_buyings')
-      .select(`
-        id,
-        title,
-        status,
-        total_price,
-        total_quantity,
-        deadline,
-        image_url
-      `)
-      .eq('creator_id', user.id)
-      .order('created_at', { ascending: false });
-
-    if (!error && hostedData) {
-      const items = await Promise.all((hostedData as any[]).map(async (cb) => {
-        const { data: allJoiners } = await supabase
-          .from('joiners')
-          .select('joiner_total_quantity, joiner_total_pay')
-          .eq('co_buying_id', cb.id);
-        
-        const currentTotalQuantity = allJoiners?.reduce((sum: number, j: any) => sum + j.joiner_total_quantity, 0) || 0;
-        const currentTotalPay = allJoiners?.reduce((sum: number, j: any) => sum + j.joiner_total_pay, 0) || 0;
-        const remaining = Math.max(0, cb.total_quantity - currentTotalQuantity);
-
-        return {
-          id: cb.id,
-          title: cb.title,
-          status: cb.status,
-          myQuantity: currentTotalQuantity,
-          myTotalPay: cb.total_price * currentTotalQuantity, // Alternatively use currentTotalPay if it's the sum
-          remainingQuantity: remaining,
-          quantityLabel: '모집',
-          thumbnailUrl: cb.image_url || 'https://images.unsplash.com/photo-1590481845199-3543ebce321f?q=80&w=2670&auto=format&fit=crop',
-        };
-      }));
-
-      const filteredItems = items.filter((item): item is NonNullable<typeof item> => item !== null);
-      ongoingItems = filteredItems.filter(item => ONGOING_STATUSES.includes(item.status));
-      finishedItems = filteredItems.filter(item => !ONGOING_STATUSES.includes(item.status));
-    }
   }
 
   const isEmpty = ongoingItems.length === 0 && finishedItems.length === 0;
@@ -212,5 +229,13 @@ export default async function MyCoBuyingPage(props: PageProps) {
         )}
       </div>
     </div>
+  );
+}
+
+export default function MyCoBuyingPage() {
+  return (
+    <Suspense fallback={<div className="p-6">로딩 중...</div>}>
+      <MyCoBuyingPageContent />
+    </Suspense>
   );
 }

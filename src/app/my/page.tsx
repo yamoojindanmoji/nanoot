@@ -1,35 +1,58 @@
-export const dynamic = 'force-dynamic';
+'use client';
 
-import { createClient } from '@/lib/supabase/server';
+import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { UserProfileClient } from './UserProfileClient';
 import { NotificationToggle } from './NotificationToggle';
 import { Info, HelpCircle, LogOut, ChevronRight } from 'lucide-react';
 
-export default async function MyPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+export default function MyPage() {
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  const supabase = createClient();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) {
+        setIsLoading(false);
+        return;
+      }
+      setUser(currentUser);
+
+      const { data: profileData } = await supabase
+        .from('users')
+        .select(`
+          id,
+          name,
+          nickname,
+          profile_image_url,
+          building_id,
+          buildings (
+            name,
+            open_chat_link
+          )
+        `)
+        .eq('id', currentUser.id)
+        .single();
+      
+      setProfile(profileData);
+      setIsLoading(false);
+    };
+
+    fetchData();
+  }, [supabase]);
+
+  if (isLoading) {
+    return <div className="p-6">로딩 중...</div>;
+  }
 
   if (!user) {
     return null;
   }
-
-  // Get user profile data and building info
-  const { data: profile } = await supabase
-    .from('users')
-    .select(`
-      id,
-      name,
-      nickname,
-      profile_image_url,
-      building_id,
-      buildings (
-        name,
-        open_chat_link
-      )
-    `)
-    .eq('id', user.id)
-    .single();
 
   const isBuildingVerified = !!profile?.building_id;
   const building = Array.isArray(profile?.buildings) ? profile.buildings[0] : profile?.buildings;
@@ -87,8 +110,8 @@ export default async function MyPage() {
             <Link href="/privacy" className="hover:underline text-gray-500 font-bold">개인정보처리방침</Link>
          </div>
          <p className="text-[11px] text-gray-400 leading-relaxed">
-           나눗은 이웃 간의 신뢰를 바탕으로 하는 공동구매 나눔 서비스입니다.<br />
-           관리자에 의해 부득이하게 서비스 이용이 제한될 수 있습니다.
+            나눗은 이웃 간의 신뢰를 바탕으로 하는 공동구매 나눔 서비스입니다.<br />
+            관리자에 의해 부득이하게 서비스 이용이 제한될 수 있습니다.
          </p>
       </div>
     </div>
@@ -96,25 +119,27 @@ export default async function MyPage() {
 }
 
 function MenuLink({ icon, title, href, target, onClick }: { icon: React.ReactNode, title: string, href: string, target?: string, onClick?: () => void }) {
+  const content = (
+    <>
+      <div className="flex items-center gap-3 text-gray-800">
+        <span className="text-gray-500">{icon}</span>
+        <span className="text-[16px] font-medium">{title}</span>
+      </div>
+      <ChevronRight size={20} className="text-gray-300" />
+    </>
+  );
+
   if (onClick) {
     return (
       <button onClick={onClick} className="flex justify-between items-center p-5 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 w-full text-left">
-        <div className="flex items-center gap-3 text-gray-800">
-          <span className="text-gray-500">{icon}</span>
-          <span className="text-[16px] font-medium">{title}</span>
-        </div>
-        <ChevronRight size={20} className="text-gray-300" />
+        {content}
       </button>
     );
   }
   
   return (
     <Link href={href} target={target} className="flex justify-between items-center p-5 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0">
-      <div className="flex items-center gap-3 text-gray-800">
-        <span className="text-gray-500">{icon}</span>
-        <span className="text-[16px] font-medium">{title}</span>
-      </div>
-      <ChevronRight size={20} className="text-gray-300" />
+      {content}
     </Link>
   );
 }

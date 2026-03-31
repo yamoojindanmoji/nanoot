@@ -1,62 +1,113 @@
-export const dynamic = 'force-dynamic';
+'use client';
 
-import { createClient } from '@/lib/supabase/server';
+import { useState, useEffect, use, Suspense } from 'react';
+import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ParticipatedDetailClient } from './ParticipatedDetailClient';
 import { HostedDetailClient } from './HostedDetailClient';
 import Image from 'next/image';
 
-export default async function DetailPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<{ from?: string }> }) {
-  const { id } = await params;
-  const { from } = await searchParams;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+function DetailPageContent({ params: paramsPromise, searchParams: searchParamsPromise }: { params: Promise<{ id: string }>, searchParams: Promise<{ from?: string }> }) {
+  const params = use(paramsPromise);
+  const searchParams = use(searchParamsPromise);
+  const id = params.id;
+  const from = searchParams.from;
 
-  if (!user) {
-    return null;
+  const [user, setUser] = useState<any>(null);
+  const [detailData, setDetailData] = useState<any>(null);
+  const [allJoiners, setAllJoiners] = useState<any[]>([]);
+  const [userJoiner, setUserJoiner] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const supabase = createClient();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) {
+        setIsLoading(false);
+        return;
+      }
+      setUser(currentUser);
+
+      const { data: cb, error: cbError } = await supabase
+        .from('co_buyings')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (cbError || !cb) {
+        setIsLoading(false);
+        return;
+      }
+      setDetailData(cb);
+
+      const { data: joiners } = await supabase
+        .from('joiners')
+        .select(`
+          id,
+          joiner_total_quantity,
+          joiner_total_pay,
+          pay_status,
+          user_id,
+          users (
+            name,
+            nickname,
+            profile_image_url
+          ),
+          joiner_product_details (
+            joiner_quantity,
+            product_options (
+              name,
+              price
+            )
+          )
+        `)
+        .eq('co_buying_id', id);
+      
+      setAllJoiners(joiners || []);
+
+      const { data: uJoiner } = await supabase
+        .from('joiners')
+        .select(`
+          id,
+          user_id,
+          joiner_total_quantity,
+          joiner_total_pay,
+          joiner_product_details (
+            id,
+            joiner_quantity,
+            product_options (
+              id,
+              name,
+              price,
+              remain_quantity
+            )
+          )
+        `)
+        .eq('co_buying_id', id)
+        .eq('user_id', currentUser.id)
+        .single();
+      
+      setUserJoiner(uJoiner);
+      setIsLoading(false);
+    };
+
+    fetchData();
+  }, [id, supabase]);
+
+  if (isLoading) {
+    return <div className="p-6">로딩 중...</div>;
   }
 
-  // 1. Fetch co-buying info first
-  const { data: detailData, error: detailError } = await supabase
-    .from('co_buyings')
-    .select(`*`)
-    .eq('id', id)
-    .single();
-
-  if (detailError || !detailData) {
-    console.error('Fetch error:', detailError);
-    notFound();
+  if (!user || !detailData) {
+    return <div className="p-6 text-center text-gray-500">데이터를 찾을 수 없습니다.</div>;
   }
 
-  // If user explicitly navigated from the 'participated' tab, show participated view even if creator
   const isCreator = detailData.creator_id === user.id && from !== 'participated';
-
-  // Calculate generic quantities for both views
-  const { data: allJoiners } = await supabase
-    .from('joiners')
-    .select(`
-      id,
-      joiner_total_quantity,
-      joiner_total_pay,
-      pay_status,
-      user_id,
-      users (
-        name,
-        nickname,
-        profile_image_url
-      ),
-      joiner_product_details (
-        joiner_quantity,
-        product_options (
-          name,
-          price
-        )
-      )
-    `)
-    .eq('co_buying_id', id);
-    
-  const currentTotalQuantity = allJoiners?.reduce((sum, j) => sum + j.joiner_total_quantity, 0) || 0;
+  const currentTotalQuantity = allJoiners.reduce((sum, j) => sum + j.joiner_total_quantity, 0);
   const remainingQuantity = Math.max(0, detailData.total_quantity - currentTotalQuantity);
 
   const coBuyingInfo = {
@@ -74,15 +125,11 @@ export default async function DetailPage({ params, searchParams }: { params: Pro
   };
 
   if (isCreator) {
-    // Hosted View
     const basePricePerItem = detailData.total_price ? (detailData.total_price / detailData.total_quantity) : 0;
-
-    const joinersList = allJoiners?.map((j: any) => {
+    const joinersList = allJoiners.map((j: any) => {
       const userObj = Array.isArray(j.users) ? j.users[0] : j.users;
       const opts = (j.joiner_product_details || []).map((detail: any) => {
-        const optPrice = detail.product_options?.price !== undefined && detail.product_options?.price !== null
-          ? detail.product_options.price
-          : basePricePerItem;
+        const optPrice = detail.product_options?.price ?? basePricePerItem;
         return {
           optionName: detail.product_options?.name || '기본 상품',
           quantity: detail.joiner_quantity,
@@ -90,21 +137,17 @@ export default async function DetailPage({ params, searchParams }: { params: Pro
         };
       });
 
-      const calculatedTotalPay = opts.length > 0 
-        ? opts.reduce((sum: number, opt: any) => sum + opt.totalPrice, 0)
-        : Math.round(j.joiner_total_quantity * basePricePerItem);
-
       return {
         id: j.id,
         userId: j.user_id,
         name: userObj?.nickname || userObj?.name || '알 수 없음',
         profileImageUrl: userObj?.profile_image_url || null,
         totalQuantity: j.joiner_total_quantity,
-        totalPay: j.joiner_total_pay || calculatedTotalPay,
+        totalPay: j.joiner_total_pay || (opts.reduce((sum: number, opt: any) => sum + opt.totalPrice, 0)),
         payStatus: (j.pay_status || 'UNPAID') as 'PAID' | 'UNPAID',
         options: opts,
       };
-    }) || [];
+    });
 
     return (
       <div className="flex flex-col flex-1 bg-gray-50 min-h-screen relative">
@@ -114,37 +157,13 @@ export default async function DetailPage({ params, searchParams }: { params: Pro
   }
 
   // Participated View
-  const { data: userJoiner, error: joinerError } = await supabase
-    .from('joiners')
-    .select(`
-      id,
-      user_id,
-      joiner_total_quantity,
-      joiner_total_pay,
-      joiner_product_details (
-        id,
-        joiner_quantity,
-        product_options (
-          id,
-          name,
-          price,
-          remain_quantity
-        )
-      )
-    `)
-    .eq('co_buying_id', id)
-    .eq('user_id', user.id)
-    .single();
-
-  if (joinerError || !userJoiner) {
-    console.error('Fetch joiner error:', joinerError);
-    notFound();
+  if (!userJoiner) {
+    return <div className="p-6 text-center text-gray-500">참여 내역을 찾을 수 없습니다.</div>;
   }
 
   const joinerDetails = (userJoiner as any).joiner_product_details as any[];
   const basePricePerItem = detailData.total_price ? (detailData.total_price / detailData.total_quantity) : 0;
 
-  // If product options exist, map them; otherwise create a fallback single line from joiner totals
   const initialDetails = joinerDetails && joinerDetails.length > 0
     ? joinerDetails.map((detail: any) => ({
         id: detail.id,
@@ -154,16 +173,14 @@ export default async function DetailPage({ params, searchParams }: { params: Pro
         quantity: detail.joiner_quantity,
         maxAvailable: detail.joiner_quantity + (detail.product_options?.remain_quantity ?? remainingQuantity),
       }))
-    : (userJoiner as any).joiner_total_quantity > 0
-      ? [{
-          id: (userJoiner as any).id,
-          optionId: '',
-          name: '기본 상품',
-          price: basePricePerItem,
-          quantity: (userJoiner as any).joiner_total_quantity,
-          maxAvailable: (userJoiner as any).joiner_total_quantity + remainingQuantity,
-        }]
-      : [];
+    : [{
+        id: userJoiner.id,
+        optionId: '',
+        name: '기본 상품',
+        price: basePricePerItem,
+        quantity: userJoiner.joiner_total_quantity,
+        maxAvailable: userJoiner.joiner_total_quantity + remainingQuantity,
+      }];
 
   return (
     <div className="flex flex-col flex-1 pb-24 bg-gray-50 min-h-screen relative">
@@ -180,8 +197,8 @@ export default async function DetailPage({ params, searchParams }: { params: Pro
       </header>
 
       <div className="bg-white p-5 flex gap-4 border-b border-gray-100">
-        <div className="w-20 h-20 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
-           <Image src={coBuyingInfo.thumbnailUrl} alt={coBuyingInfo.title} width={80} height={80} className="w-full h-full object-cover" />
+        <div className="w-20 h-20 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0 relative">
+           <Image src={coBuyingInfo.thumbnailUrl} alt={coBuyingInfo.title} fill className="object-cover" />
         </div>
         <div className="flex flex-col justify-center">
           <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-sm w-fit mb-1">
@@ -202,5 +219,13 @@ export default async function DetailPage({ params, searchParams }: { params: Pro
         joinerId={userJoiner.id}
       />
     </div>
+  );
+}
+
+export default function DetailPage(props: { params: Promise<{ id: string }>, searchParams: Promise<{ from?: string }> }) {
+  return (
+    <Suspense fallback={<div className="p-6">로딩 중...</div>}>
+      <DetailPageContent {...props} />
+    </Suspense>
   );
 }

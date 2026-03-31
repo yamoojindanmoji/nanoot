@@ -40,8 +40,9 @@ export default function BuildingSearchPage() {
   };
 
   const handleSelectBuilding = (buildingId: string) => {
-    // 선택한 건물 ID를 쿼리 파라미터로 넘겨서 코드 입력 페이지로 이동
-    router.push(`/building/setup/code?id=${buildingId}`);
+    // 선택한 건물 ID를 쿠키에 저장하여 게스트로 입장
+    document.cookie = `guest_building_id=${buildingId}; path=/; max-age=31536000`;
+    router.push('/');
   };
 
   return (

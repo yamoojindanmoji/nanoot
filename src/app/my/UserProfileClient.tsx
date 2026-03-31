@@ -63,7 +63,11 @@ export function UserProfileClient({
              </p>
              <div className="flex gap-2">
                <Button variant="secondary" className="flex-1 rounded-xl" onClick={() => setShowVerifyPopup(false)}>다음에</Button>
-               <Button className="flex-1 rounded-xl" onClick={() => window.location.href='/building/setup'}>인증하러 가기</Button>
+               <Button className="flex-1 rounded-xl" onClick={() => {
+                 // 로컬 스토리지 등에 저장된 마지막 방문 건물 ID가 있으면 사용, 없으면 setup으로
+                 const buildingId = typeof window !== 'undefined' ? localStorage.getItem('last_browsed_building_id') || '1' : '1';
+                 window.location.href=`/building/verify?id=${buildingId}`;
+               }}>인증하러 가기</Button>
              </div>
           </div>
         </div>
