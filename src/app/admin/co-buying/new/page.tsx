@@ -118,11 +118,14 @@ export default function NewCoBuyingPage() {
   const manualFeeVal = typeof formData.manualFee === 'number' ? formData.manualFee : 0;
   const calculatedFee = formData.feeType === 'manual' ? manualFeeVal : Math.floor(priceVal * formData.feeType);
   const totalQuantity = formData.options.reduce((sum, opt) => sum + opt.quantity, 0);
-  const hostTotalQuantity = formData.hostQuantity; // Simplified
+  const hostTotalQuantity = formData.hostQuantity;
   const participantQuantity = totalQuantity - hostTotalQuantity;
   
-  const unitPrice = priceVal + calculatedFee; // Approximate participant unit price
-  const hostPay = formData.hostQuantity * priceVal;
+  // 개당 참가액 = (정가 + 수고비) / 총 수량 (소수점 버림)
+  const unitPrice = totalQuantity > 0 ? Math.floor((priceVal + calculatedFee) / totalQuantity) : 0;
+  // 주최자 지불액 = (정가 / 총 수량) * 주최자 수량
+  const hostPay = totalQuantity > 0 ? Math.floor(priceVal / totalQuantity) * formData.hostQuantity : 0;
+  // 받을 총 금액 = 개당 참가액 * 참여자 수량
   const totalReceived = participantQuantity * unitPrice;
 
   const handleSubmit = async () => {
@@ -408,17 +411,17 @@ export default function NewCoBuyingPage() {
                 <span className="text-white font-bold">{totalQuantity}개</span>
              </div>
              <div className="flex justify-between text-gray-400 text-sm">
-                <span>내가 낼 금액</span>
-                <span className="text-white font-bold">₩{hostPay.toLocaleString()}</span>
-             </div>
-             <div className="flex justify-between text-gray-400 text-sm">
                 <span>개당 참가액</span>
-                <span className="text-white font-bold text-rose-400 italic">₩{unitPrice.toLocaleString()} (추정)</span>
+                <span className="text-white font-bold text-[#C1EB3B]">₩{unitPrice.toLocaleString()}</span>
              </div>
              <div className="h-px bg-gray-800 my-1" />
-             <div className="flex justify-between items-center">
-                <span className="font-bold">받을 총 금액</span>
-                <span className="text-xl font-bold text-green-400">₩{totalReceived.toLocaleString()}</span>
+             <div className="flex justify-between text-gray-400 text-sm italic">
+                <span>내가 낼 금액 (주최자 {formData.hostQuantity}개)</span>
+                <span className="text-white font-bold">₩{hostPay.toLocaleString()}</span>
+             </div>
+             <div className="flex justify-between items-center mt-1">
+                <span className="font-bold">받을 총 금액 (참가자 {participantQuantity}개)</span>
+                <span className="text-xl font-bold text-[#84CC16]">₩{totalReceived.toLocaleString()}</span>
              </div>
           </section>
 
