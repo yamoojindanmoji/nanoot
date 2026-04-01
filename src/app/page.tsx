@@ -16,6 +16,13 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [showGuestLanding, setShowGuestLanding] = useState(false);
 
+  // Drag interaction for PC
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const [hasMoved, setHasMoved] = useState(false);
+
   const supabase = createClient();
 
   const fetchData = useCallback(async () => {
@@ -78,28 +85,6 @@ export default function Home() {
     fetchData();
   }, [fetchData]);
 
-  if (isLoading) {
-    return <div className="p-6">로딩 중...</div>;
-  }
-
-  if (showGuestLanding) {
-    return <GuestLanding />;
-  }
-
-  const filteredItems = items.filter(item => {
-    if (activeTab === '전체') return true;
-    return item.category === activeTab;
-  });
-
-  const displayCategories = ['전체', ...CATEGORIES.map(c => c.value)];
-
-  // Drag interaction for PC
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [scrollLeft, setScrollLeft] = useState(0);
-  const [hasMoved, setHasMoved] = useState(false);
-
   const onMouseDown = (e: React.MouseEvent) => {
     if (!scrollRef.current) return;
     setIsDragging(true);
@@ -126,6 +111,20 @@ export default function Home() {
     }
     scrollRef.current.scrollLeft = scrollLeft - walk;
   };
+
+  if (isLoading) {
+    return <div className="p-6">로딩 중...</div>;
+  }
+
+  if (showGuestLanding) {
+    return <GuestLanding />;
+  }
+  const filteredItems = items.filter(item => {
+    if (activeTab === '전체') return true;
+    return item.category === activeTab;
+  });
+
+  const displayCategories = ['전체', ...CATEGORIES.map(c => c.value)];
 
   return (
     <div className="flex flex-col flex-1 pb-20">
