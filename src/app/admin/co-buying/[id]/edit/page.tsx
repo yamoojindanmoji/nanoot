@@ -9,8 +9,10 @@ import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { ChevronLeft, Camera } from 'lucide-react';
+import { CATEGORIES } from '@/lib/categories';
+import { CoBuyingCategory } from '@/types';
 
-const CATEGORIES = ['전체', '생필품', '과일·신선식품', '가공품', '냉동식품'];
+// CATEGORIES constant removed here, now using import
 
 export default function EditCoBuyingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -25,7 +27,7 @@ export default function EditCoBuyingPage({ params }: { params: Promise<{ id: str
   // Form State
   const [formData, setFormData] = useState({
     buildingId: '',
-    category: '전체',
+    category: CATEGORIES[0].value as CoBuyingCategory,
     title: '',
     link: '',
     image: null as File | null,
@@ -227,11 +229,16 @@ export default function EditCoBuyingPage({ params }: { params: Promise<{ id: str
             <div className="flex flex-wrap gap-2">
               {CATEGORIES.map(cat => (
                 <button
-                  key={cat}
-                  onClick={() => setFormData({ ...formData, category: cat })}
-                  className={`px-4 py-2 rounded-full text-sm font-medium ${formData.category === cat ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-500'}`}
+                  key={cat.value}
+                  onClick={() => setFormData({ ...formData, category: cat.value })}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                    formData.category === cat.value 
+                      ? 'bg-[#84CC16] text-white' 
+                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  }`}
                 >
-                  {cat}
+                  <span className="mr-1.5">{cat.emoji}</span>
+                  {cat.value}
                 </button>
               ))}
             </div>
