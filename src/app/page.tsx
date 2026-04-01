@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { CoBuyingCard } from '@/components/CoBuyingCard';
 import { GuestLanding } from '@/components/GuestLanding';
+import { CATEGORIES } from '@/lib/categories';
 import Link from 'next/link';
 
 export default function Home() {
@@ -90,7 +91,7 @@ export default function Home() {
     return item.category === activeTab;
   });
 
-  const categories = ['전체', '식품', '생활용품', '기타'];
+  const displayCategories = [{ value: '전체', emoji: '📦' }, ...CATEGORIES];
 
   return (
     <div className="flex flex-col flex-1 pb-20">
@@ -105,14 +106,15 @@ export default function Home() {
       </header>
 
       {/* Tabs */}
-      <div className="px-4 py-2 border-b border-gray-100 flex gap-4 text-[15px] font-medium text-gray-500 overflow-x-auto no-scrollbar">
-        {categories.map(cat => (
+      <div className="px-4 py-2 border-b border-gray-100 flex gap-4 text-[15px] font-medium text-gray-500 overflow-x-auto no-scrollbar scroll-smooth">
+        {displayCategories.map(cat => (
           <button 
-            key={cat}
-            onClick={() => setActiveTab(cat)}
-            className={`${activeTab === cat ? 'text-gray-900 border-b-2 border-gray-900' : ''} pb-1 whitespace-nowrap transition-all`}
+            key={cat.value}
+            onClick={() => setActiveTab(cat.value)}
+            className={`${activeTab === cat.value ? 'text-[#84CC16] border-b-2 border-[#84CC16]' : 'hover:text-gray-700'} pb-1.5 whitespace-nowrap transition-all flex items-center gap-1.5`}
           >
-            {cat}
+            <span className="text-base">{cat.emoji}</span>
+            {cat.value}
           </button>
         ))}
       </div>

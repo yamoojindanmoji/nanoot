@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
+import { getCategoryEmoji } from '@/lib/categories';
 import { JoinBottomSheetClient } from './JoinBottomSheetClient';
 
 export default async function CoBuyingDetail({ params }: { params: Promise<{ buildingId: string, id: string }> }) {
@@ -102,7 +103,8 @@ export default async function CoBuyingDetail({ params }: { params: Promise<{ bui
       {/* ---------- 4. 본문 내용 영역 ---------- */}
       <div className="bg-white px-5 pt-6 pb-8">
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-[11px] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-sm">
+          <span className="text-[11px] font-bold text-[#84CC16] bg-[#84CC16]/10 border border-[#84CC16]/20 px-2.5 py-1 rounded-full flex items-center gap-1.5">
+            <span>{getCategoryEmoji(detail.category)}</span>
             {detail.category}
           </span>
           <span className="text-[13px] text-gray-400 flex items-center gap-1">

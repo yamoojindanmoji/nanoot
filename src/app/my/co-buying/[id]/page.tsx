@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation';
 import { ParticipatedDetailClient } from './ParticipatedDetailClient';
 import { HostedDetailClient } from './HostedDetailClient';
 import Image from 'next/image';
+import { getCategoryEmoji } from '@/lib/categories';
 
 function DetailPageContent({ params: paramsPromise, searchParams: searchParamsPromise }: { params: Promise<{ id: string }>, searchParams: Promise<{ from?: string }> }) {
   const params = use(paramsPromise);
@@ -201,12 +202,18 @@ function DetailPageContent({ params: paramsPromise, searchParams: searchParamsPr
            <Image src={coBuyingInfo.thumbnailUrl} alt={coBuyingInfo.title} fill className="object-cover" />
         </div>
         <div className="flex flex-col justify-center">
-          <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-sm w-fit mb-1">
-             {coBuyingInfo.status === 'RECRUITING' ? '모집중' : 
-              coBuyingInfo.status === 'PAYMENT_WAITING' ? '결제대기' : 
-              coBuyingInfo.status === 'ORDER_IN_PROGRESS' ? '주문진행' : 
-              coBuyingInfo.status === 'READY_FOR_PICKUP' ? '픽업대기' : '완료됨'}
-          </span>
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <span className="text-[11px] font-bold text-[#84CC16] bg-[#84CC16]/10 px-2 py-0.5 rounded flex items-center gap-1">
+              <span>{getCategoryEmoji(coBuyingInfo.category)}</span>
+              {coBuyingInfo.category}
+            </span>
+            <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+               {coBuyingInfo.status === 'RECRUITING' ? '모집중' : 
+                coBuyingInfo.status === 'PAYMENT_WAITING' ? '결제대기' : 
+                coBuyingInfo.status === 'ORDER_IN_PROGRESS' ? '주문진행' : 
+                coBuyingInfo.status === 'READY_FOR_PICKUP' ? '픽업대기' : '완료됨'}
+            </span>
+          </div>
           <h2 className="font-semibold text-gray-900 leading-snug line-clamp-2">
             {coBuyingInfo.title}
           </h2>

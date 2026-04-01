@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { getCategoryEmoji } from '@/lib/categories';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 
@@ -147,7 +148,10 @@ export default function AdminDashboard() {
             <div key={cb.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col gap-3">
               <div className="flex justify-between items-start">
                 <div className="flex flex-col gap-1">
-                  <span className="text-[12px] text-gray-400 font-medium">{cb.category}</span>
+                  <span className="text-[11px] text-gray-400 font-medium flex items-center gap-1">
+                    <span>{getCategoryEmoji(cb.category)}</span>
+                    {cb.category}
+                  </span>
                   <h3 className="text-[17px] font-bold text-gray-900 line-clamp-1">{cb.title}</h3>
                 </div>
                 <span className={`px-2 py-1 rounded text-[11px] font-bold ${STATUS_LABELS[cb.status].color}`}>

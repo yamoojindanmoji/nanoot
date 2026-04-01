@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import Image from 'next/image';
+import { getCategoryEmoji } from '@/lib/categories';
 
 export interface CoBuyingCardProps {
   id: string;
@@ -69,7 +69,10 @@ export function CoBuyingCard({
         <div className="flex flex-col flex-1 justify-between py-0.5">
           <div>
             <div className="flex justify-between items-start mb-1">
-              <span className="text-xs text-gray-500">{category || '기타'}</span>
+              <span className="text-[11px] text-gray-500 flex items-center gap-1">
+                <span>{getCategoryEmoji(category)}</span>
+                {category || '기타'}
+              </span>
               <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${currentStatus.colorClass}`}>
                 {currentStatus.label}
               </span>

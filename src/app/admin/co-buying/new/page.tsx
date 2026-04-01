@@ -9,8 +9,9 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { ChevronLeft, X, Plus, Minus, Camera } from 'lucide-react';
 import Image from 'next/image';
+import { CATEGORIES } from '@/lib/categories';
 
-const CATEGORIES = ['전체', '생필품', '과일·신선식품', '가공품', '냉동식품'];
+// CATEGORIES constant removed here, now using import
 const FEES = [
   { label: '5%', value: 0.05 },
   { label: '10%', value: 0.10 },
@@ -34,7 +35,7 @@ export default function NewCoBuyingPage() {
   // Form State
   const [formData, setFormData] = useState({
     buildingId: '',
-    category: '전체',
+    category: CATEGORIES[0].value,
     title: '',
     link: '',
     image: null as File | null,
@@ -217,15 +218,16 @@ export default function NewCoBuyingPage() {
             <div className="flex flex-wrap gap-2">
               {CATEGORIES.map(cat => (
                 <button
-                  key={cat}
-                  onClick={() => setFormData({ ...formData, category: cat })}
+                  key={cat.value}
+                  onClick={() => setFormData({ ...formData, category: cat.value })}
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                    formData.category === cat
-                      ? 'bg-gray-900 text-white'
-                      : 'bg-gray-100 text-gray-500'
+                    formData.category === cat.value
+                      ? 'bg-[#84CC16] text-white'
+                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                   }`}
                 >
-                  {cat}
+                  <span className="mr-1.5">{cat.emoji}</span>
+                  {cat.value}
                 </button>
               ))}
             </div>
