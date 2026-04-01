@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { CoBuyingCard } from '@/components/CoBuyingCard';
 import { GuestLanding } from '@/components/GuestLanding';
@@ -91,7 +91,41 @@ export default function Home() {
     return item.category === activeTab;
   });
 
-  const displayCategories = [{ value: '전체', emoji: '📦' }, ...CATEGORIES];
+  const displayCategories = ['전체', ...CATEGORIES.map(c => c.value)];
+
+  // Drag interaction for PC
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const [hasMoved, setHasMoved] = useState(false);
+
+  const onMouseDown = (e: React.MouseEvent) => {
+    if (!scrollRef.current) return;
+    setIsDragging(true);
+    setHasMoved(false);
+    setStartX(e.pageX - scrollRef.current.offsetLeft);
+    setScrollLeft(scrollRef.current.scrollLeft);
+  };
+
+  const onMouseLeave = () => {
+    setIsDragging(false);
+  };
+
+  const onMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 2; // scroll-speed
+    if (Math.abs(x - startX) > 5) {
+      setHasMoved(true);
+    }
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
 
   return (
     <div className="flex flex-col flex-1 pb-20">
@@ -106,15 +140,25 @@ export default function Home() {
       </header>
 
       {/* Tabs */}
-      <div className="px-4 py-2 border-b border-gray-100 flex gap-4 text-[15px] font-medium text-gray-500 overflow-x-auto no-scrollbar scroll-smooth">
+      <div 
+        ref={scrollRef}
+        onMouseDown={onMouseDown}
+        onMouseLeave={onMouseLeave}
+        onMouseUp={onMouseUp}
+        onMouseMove={onMouseMove}
+        className={`px-4 py-4 flex gap-2 overflow-x-auto no-scrollbar scroll-smooth select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+      >
         {displayCategories.map(cat => (
           <button 
-            key={cat.value}
-            onClick={() => setActiveTab(cat.value)}
-            className={`${activeTab === cat.value ? 'text-[#84CC16] border-b-2 border-[#84CC16]' : 'hover:text-gray-700'} pb-1.5 whitespace-nowrap transition-all flex items-center gap-1.5`}
+            key={cat}
+            onClick={() => !hasMoved && setActiveTab(cat)}
+            className={`px-4 py-1.5 rounded-full text-[14px] font-medium whitespace-nowrap transition-all border ${
+              activeTab === cat 
+                ? 'bg-black text-white border-black' 
+                : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+            }`}
           >
-            <span className="text-base">{cat.emoji}</span>
-            {cat.value}
+            {cat}
           </button>
         ))}
       </div>

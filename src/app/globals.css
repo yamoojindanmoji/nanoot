@@ -12,6 +12,14 @@
     --gnb-total-height: calc(var(--gnb-height) + env(safe-area-inset-bottom, 0px));
     --fab-bottom-offset: calc(var(--gnb-total-height) + 16px);
   }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
 body {
