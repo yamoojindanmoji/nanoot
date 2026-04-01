@@ -137,6 +137,13 @@ export default function Home() {
           </svg>
         </button>
       </header>
+      
+      {/* Banner */}
+      <div className="bg-[#D2E762] py-3.5 px-4 text-center">
+        <p className="text-[13px] font-bold text-black leading-tight">
+          우리 건물에서 진행중인 공구 상품을 확인해보세요!
+        </p>
+      </div>
 
       {/* Tabs */}
       <div 
@@ -151,10 +158,10 @@ export default function Home() {
           <button 
             key={cat}
             onClick={() => !hasMoved && setActiveTab(cat)}
-            className={`px-4 py-1.5 rounded-full text-[14px] font-medium whitespace-nowrap transition-all border ${
+            className={`px-4 py-1.5 rounded-full text-[14px] font-bold whitespace-nowrap transition-all border ${
               activeTab === cat 
-                ? 'bg-black text-white border-black' 
-                : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+                ? 'bg-[#D2E762] text-black border-[#D2E762]' 
+                : 'bg-gray-100 text-gray-400 border-gray-100'
             }`}
           >
             {cat}
