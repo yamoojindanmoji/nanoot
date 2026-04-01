@@ -123,7 +123,9 @@ export default function NewCoBuyingPage() {
   
   // 개당 참가액 = (정가 + 수고비) / 총 수량 (소수점 버림)
   const unitPrice = totalQuantity > 0 ? Math.floor((priceVal + calculatedFee) / totalQuantity) : 0;
-  const hostPay = formData.hostQuantity * (totalQuantity > 0 ? Math.floor(priceVal / totalQuantity) : 0);
+  // 주최자 지불액 = (정가 / 총 수량) * 주최자 수량
+  const hostPay = totalQuantity > 0 ? Math.floor(priceVal / totalQuantity) * formData.hostQuantity : 0;
+  // 받을 총 금액 = 개당 참가액 * 참여자 수량
   const totalReceived = participantQuantity * unitPrice;
 
   const handleSubmit = async () => {
