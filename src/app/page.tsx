@@ -141,17 +141,6 @@ export default function Home() {
         )}
       </div>
 
-      {/* Floating Action Button (Write) */}
-      <Link 
-        href={user ? "/admin/co-buying/new" : "/login"}
-        style={{ bottom: 'var(--fab-bottom-offset)' }}
-        className="fixed right-4 w-14 h-14 bg-black text-white rounded-full flex items-center justify-center shadow-lg hover:bg-gray-800 transition-all active:scale-95 z-30"
-      >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19" />
-          <line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
-      </Link>
     </div>
   );
 }
