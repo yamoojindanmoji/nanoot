@@ -10,6 +10,23 @@ webpush.setVapidDetails(
 
 export async function POST(request: Request) {
   try {
+    const vapidPublic = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+    const vapidPrivate = process.env.VAPID_PRIVATE_KEY;
+
+    if (!vapidPublic || !vapidPrivate) {
+      console.error('VAPID keys are missing in environment variables');
+      return NextResponse.json({ 
+        success: false, 
+        error: '서버 설정 오류: VAPID 키가 누락되었습니다.' 
+      }, { status: 500 });
+    }
+
+    webpush.setVapidDetails(
+      'mailto:support@nanoot.com',
+      vapidPublic,
+      vapidPrivate
+    );
+
     const { userIds, title, body, coBuyingId } = await request.json();
     const supabase = await createClient();
 
