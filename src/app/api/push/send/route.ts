@@ -57,13 +57,18 @@ export async function POST(request: Request) {
           );
 
           // 2. Save notification to history
-          await supabase.from('notifications').insert({
+          const { error: insertError } = await supabase.from('notifications').insert({
             user_id: sub.user_id,
             title,
             content: body,
             link_url: `/my/co-buying/${coBuyingId}`,
             is_read: false,
           });
+
+          if (insertError) {
+            console.error(`Database insert failed for user ${sub.user_id}:`, insertError);
+            throw new Error(`DB Error: ${insertError.message}`);
+          }
 
           return { success: true, userId: sub.user_id };
         } catch (error: any) {
