@@ -76,7 +76,7 @@ export default function SetupProfilePage() {
   };
 
   return (
-    <div className="flex flex-col flex-1 px-6 pt-12 pb-10 h-screen bg-white max-w-[440px] mx-auto">
+    <div className="flex flex-col flex-1 px-6 pt-12 pb-10 overflow-y-auto">
       <header className="flex items-center mb-8">
         <button onClick={() => router.back()} className="p-2 -ml-2 text-gray-900">
            <ChevronLeft size={24} />
@@ -113,7 +113,7 @@ export default function SetupProfilePage() {
 
           <div className="w-full flex flex-col gap-2">
             <label className="text-sm font-bold text-gray-900 px-1">닉네임</label>
-            <Input 
+            <Input
               placeholder="사용하실 닉네임을 입력해주세요"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
@@ -124,16 +124,24 @@ export default function SetupProfilePage() {
             <p className="text-[12px] text-gray-400 px-1">
               최대 20자까지 입력 가능합니다.
             </p>
+
+            <div className="mt-2 bg-green-50 border border-green-200 rounded-lg p-4">
+              <p className="text-sm font-semibold text-green-800 mb-1">💡 오픈채팅방 닉네임과 통일을 권장해요!</p>
+              <p className="text-xs text-green-700 leading-relaxed">
+                건물 오픈채팅방에서 입금 확인 시 닉네임으로 참여자를 확인하기 때문에, 오픈채팅방 닉네임과 동일하게 설정하면 더 원활한 수령이 가능해요.
+              </p>
+              <p className="text-xs text-green-600 mt-2">(예: 홍길동/7층)</p>
+            </div>
           </div>
         </form>
       </div>
 
-      <Button 
+      <Button
         onClick={handleSubmit}
         disabled={isSubmitting || !nickname.trim()}
-        className="w-full h-14 rounded-xl font-bold text-[16px] bg-[#C1EB3B] text-gray-900 hover:bg-[#A3CE2A] transition-all"
+        className="w-full h-14 rounded-xl font-bold text-[16px] bg-[#C1EB3B] text-gray-900 hover:bg-[#A3CE2A] transition-all mt-8"
       >
-        {isSubmitting ? '설정 중...' : '시작하기'}
+        {isSubmitting ? '설정 중...' : '회원가입 완료'}
       </Button>
     </div>
   );
