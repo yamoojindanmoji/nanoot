@@ -141,7 +141,7 @@ export default function SetupProfilePage() {
       <Button
         onClick={handleSubmit}
         disabled={isSubmitting || !nickname.trim()}
-        className="w-full h-14 rounded-xl font-bold text-[16px] bg-[#C1EB3B] text-gray-900 hover:bg-[#A3CE2A] transition-all mt-8"
+        className="w-full h-14 rounded-xl font-bold text-[16px] bg-[#C1EB3B] text-gray-900 hover:bg-[#A3CE2A] mt-8"
       >
         {isSubmitting ? '설정 중...' : '회원가입 완료'}
       </Button>
