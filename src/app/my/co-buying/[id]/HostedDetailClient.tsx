@@ -148,7 +148,8 @@ export function HostedDetailClient({ coBuyingInfo, joinersList: initialJoinersLi
     if (success) {
       setToastMessage(`${joinerName}님에게 입금 안내를 발송했습니다.`);
     } else {
-      setToastMessage('알림 발송에 실패했습니다.');
+      // triggerPushNotice internally sets error state or logs, but let's make it explicit if needed
+      setToastMessage('알림 발송에 실패했습니다. (구독 정보 상실 등)');
     }
   };
 

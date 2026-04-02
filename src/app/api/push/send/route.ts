@@ -38,6 +38,16 @@ export async function POST(request: Request) {
 
     if (subError) throw subError;
 
+    if (!subscriptions || subscriptions.length === 0) {
+      console.warn(`No subscriptions found for users: ${userIds}`);
+      return NextResponse.json({ 
+        success: false, 
+        error: '대상 유저의 푸시 구독 정보가 없습니다. (알림 권한 미허용 등)' 
+      });
+    }
+
+    console.log(`Sending push to ${subscriptions.length} subscriptions`);
+
     const results = await Promise.allSettled(
       subscriptions.map(async (sub: any) => {
         try {
