@@ -128,6 +128,19 @@ export function HostedDetailClient({ coBuyingInfo, joinersList: initialJoinersLi
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userIds, title, body, coBuyingId: coBuyingInfo.id }),
       });
+
+      if (!response.ok) {
+        const status = response.status;
+        if (status === 404) return { success: false, error: 'API 경로를 찾을 수 없습니다. (404)' };
+        if (status === 500) return { success: false, error: '서버 내부 오류가 발생했습니다. (500)' };
+        return { success: false, error: `서버 오류가 발생했습니다. (상태 코드: ${status})` };
+      }
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        return { success: false, error: '서버에서 올바르지 않은 응답이 왔습니다. (JSON 아님)' };
+      }
+
       const result = await response.json();
       if (!result.success) return { success: false, error: result.error };
       return { success: true };
