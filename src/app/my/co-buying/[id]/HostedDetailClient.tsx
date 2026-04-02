@@ -120,17 +120,59 @@ export function HostedDetailClient({ coBuyingInfo, joinersList: initialJoinersLi
     }
   };
 
-  const sendPaymentNotice = (joinerName: string) => {
-    setToastMessage(`${joinerName}님에게 입금 안내를 발송했습니다.`);
+  const triggerPushNotice = async (userIds: string[], title: string, body: string) => {
+    setIsUpdating(true);
+    try {
+      const response = await fetch('/api/push/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userIds, title, body, coBuyingId: coBuyingInfo.id }),
+      });
+      const result = await response.json();
+      if (!result.success) throw new Error(result.error);
+      return true;
+    } catch (error) {
+      console.error('Trigger push failed:', error);
+      return false;
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
-  const sendAllPaymentNotice = () => {
-    const unpaidNames = joinersList.filter(j => j.payStatus === 'UNPAID').map(j => j.name);
-    if (unpaidNames.length === 0) {
+  const sendPaymentNotice = async (userId: string, joinerName: string) => {
+    const success = await triggerPushNotice(
+      [userId],
+      '입금 안내',
+      `[${coBuyingInfo.title}] 입금을 완료해주세요`
+    );
+    if (success) {
+      setToastMessage(`${joinerName}님에게 입금 안내를 발송했습니다.`);
+    } else {
+      setToastMessage('알림 발송에 실패했습니다.');
+    }
+  };
+
+  const sendAllPaymentNotice = async () => {
+    const unpaidJoiners = joinersList.filter(j => j.payStatus === 'UNPAID');
+    const unpaidUserIds = unpaidJoiners.map(j => j.userId);
+    const unpaidNames = unpaidJoiners.map(j => j.name);
+    
+    if (unpaidUserIds.length === 0) {
       setToastMessage('미입금자가 없습니다.');
       return;
     }
-    setToastMessage(`${unpaidNames.join(', ')}님에게 입금 안내를 발송했습니다.`);
+
+    const success = await triggerPushNotice(
+      unpaidUserIds,
+      '입금 안내',
+      `[${coBuyingInfo.title}] 입금을 완료해주세요`
+    );
+
+    if (success) {
+      setToastMessage(`${unpaidNames.join(', ')}님에게 입금 안내를 발송했습니다.`);
+    } else {
+      setToastMessage('알림 발송에 실패했습니다.');
+    }
   };
 
   return (
@@ -289,8 +331,9 @@ export function HostedDetailClient({ coBuyingInfo, joinersList: initialJoinersLi
                   {isPaymentWaiting && !isPaid && (
                     <div className="mt-3 pt-3 border-t border-gray-100">
                       <button
-                        onClick={() => sendPaymentNotice(joiner.name)}
-                        className="w-full text-[13px] font-bold text-gray-500 border border-gray-200 rounded-lg py-2 hover:bg-gray-50 transition-colors"
+                        onClick={() => sendPaymentNotice(joiner.userId, joiner.name)}
+                        disabled={isUpdating}
+                        className="w-full text-[13px] font-bold text-gray-500 border border-gray-200 rounded-lg py-2 hover:bg-gray-50 transition-colors disabled:opacity-50"
                       >
                         입금 안내 알림 보내기
                       </button>
