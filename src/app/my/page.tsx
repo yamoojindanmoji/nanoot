@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { UserProfileClient } from './UserProfileClient';
@@ -11,8 +12,14 @@ export default function MyPage() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  
+
+  const router = useRouter();
   const supabase = createClient();
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.replace('/');
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -94,12 +101,10 @@ export default function MyPage() {
 
       {/* Account Settings */}
       <div className="bg-white px-5 py-4 flex flex-col gap-4 border-b border-gray-100">
-         <form action="/auth/signout" method="post">
-            <button type="submit" className="text-[15px] font-medium text-gray-600 flex items-center gap-2 hover:text-gray-900 transition-colors">
-               <LogOut size={18} />
-               로그아웃
-            </button>
-         </form>
+         <button onClick={handleSignOut} className="text-[15px] font-medium text-gray-600 flex items-center gap-2 hover:text-gray-900 transition-colors">
+            <LogOut size={18} />
+            로그아웃
+         </button>
          <button className="text-[14px] text-gray-400 text-left w-fit hover:underline">회원 탈퇴</button>
       </div>
 

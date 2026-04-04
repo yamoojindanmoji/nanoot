@@ -1,10 +1,7 @@
 'use client';
-import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
 export function Intro() {
-  const router = useRouter();
-
   const handleKakaoLogin = async () => {
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
@@ -17,16 +14,7 @@ export function Intro() {
 
   return (
     <div className="fixed inset-0 z-[100] bg-white flex flex-col pt-[max(env(safe-area-inset-top),48px)] pb-[max(env(safe-area-inset-bottom),32px)] px-6">
-      {/* Back Button */}
-      <div className="mb-4 h-10 flex items-center flex-shrink-0">
-        <button onClick={() => router.back()} className="w-10 h-10 flex items-center justify-start -ml-2 text-black">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 9 12 15 6"></polyline>
-          </svg>
-        </button>
-      </div>
-
-      <div className="flex flex-col flex-1 items-center justify-center -mt-10">
+      <div className="flex flex-col flex-1 items-center justify-center">
         {/* Logo */}
         <div className="font-black text-[56px] tracking-tighter mb-8 text-center leading-none">
           nan<span className="text-[#B9F115]">o</span><span className="text-[#3E73FB]">o</span>t
