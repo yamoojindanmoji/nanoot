@@ -19,9 +19,11 @@ interface JoinBottomSheetClientProps {
   buildingId: string;
   buildingName?: string;
   options: ProductOption[];
+  totalQuantity: number;
+  currentQuantity: number;
 }
 
-export function JoinBottomSheetClient({ coBuyingId, buildingId, buildingName, options }: JoinBottomSheetClientProps) {
+export function JoinBottomSheetClient({ coBuyingId, buildingId, buildingName, options, totalQuantity, currentQuantity }: JoinBottomSheetClientProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
@@ -76,7 +78,17 @@ export function JoinBottomSheetClient({ coBuyingId, buildingId, buildingName, op
     setQuantities(prev => ({ ...prev, [id]: Math.max(0, (prev[id] || 0) - 1) }));
   };
 
+  const totalSelectedCount = Object.values(quantities).reduce((a, b) => a + b, 0);
+
   const handlePlus = (id: string, max: number | null) => {
+    // 잔여 수량 계산
+    const remainingCapacity = totalQuantity - currentQuantity;
+    
+    if (totalSelectedCount >= remainingCapacity) {
+      alert(`${remainingCapacity}개까지만 신청 가능합니다.`);
+      return;
+    }
+
     const limit = max === null ? 999 : max;
     setQuantities(prev => ({ ...prev, [id]: Math.min(limit, (prev[id] || 0) + 1) }));
   };
@@ -158,6 +170,15 @@ export function JoinBottomSheetClient({ coBuyingId, buildingId, buildingName, op
             .insert(detailsToInsert);
           if (detailsError) throw detailsError;
         }
+      }
+
+      // 3. 목표 수량 달성 시 상태 자동 변경
+      const newTotalQuantity = currentQuantity + totalCount;
+      if (newTotalQuantity >= totalQuantity) {
+        await supabase
+          .from('co_buyings')
+          .update({ status: 'PAYMENT_WAITING' })
+          .eq('id', coBuyingId);
       }
 
       alert('참여가 완료되었습니다!');

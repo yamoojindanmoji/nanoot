@@ -77,11 +77,20 @@ export default function Home() {
     // 4. Fetch co-buying items
     const { data: cbItems } = await supabase
       .from('co_buyings')
-      .select('*')
+      .select('*, joiners(joiner_total_quantity)')
       .eq('building_id', bId)
       .order('created_at', { ascending: false });
     
-    setItems(cbItems || []);
+    const itemsWithQuantity = (cbItems || []).map(item => {
+      const hostQuantity = item.host_quantity || 0;
+      const joinersQuantity = item.joiners?.reduce((sum: number, j: any) => sum + (j.joiner_total_quantity || 0), 0) || 0;
+      return {
+        ...item,
+        current_quantity: hostQuantity + joinersQuantity
+      };
+    });
+    
+    setItems(itemsWithQuantity);
     
     // 5. Fetch unread notifications
     if (currentUser) {

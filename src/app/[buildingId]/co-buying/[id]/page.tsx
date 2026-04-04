@@ -29,7 +29,10 @@ export default async function CoBuyingDetail({ params }: { params: Promise<{ bui
     .select('joiner_total_quantity')
     .eq('co_buying_id', id);
 
-  const currentQuantity = allJoiners?.reduce((sum, j) => sum + j.joiner_total_quantity, 0) || 0;
+  // 현재 신청 수 = host_quantity + SUM(joiners.joiner_total_quantity)
+  const hostQuantity = detailData.host_quantity || 0;
+  const joinersQuantity = allJoiners?.reduce((sum, j) => sum + j.joiner_total_quantity, 0) || 0;
+  const currentQuantity = hostQuantity + joinersQuantity;
 
   const creator = Array.isArray(detailData.creator) ? detailData.creator[0] : detailData.creator;
   const building = Array.isArray(detailData.building) ? detailData.building[0] : detailData.building;
@@ -45,8 +48,10 @@ export default async function CoBuyingDetail({ params }: { params: Promise<{ bui
     .select('*')
     .eq('co_buying_id', id);
 
-  // Calculate progress
-  const progressPercent = Math.min(100, Math.floor((detail.currentQuantity / detail.totalQuantity) * 100));
+  // Calculate progress (Fix NaN% bug by checking total_quantity)
+  const progressPercent = detail.total_quantity > 0 
+    ? Math.min(100, Math.floor((detail.currentQuantity / detail.total_quantity) * 100))
+    : 0;
 
   return (
     <div className="flex flex-col flex-1 pb-24 bg-gray-50 relative min-h-screen">
@@ -124,20 +129,18 @@ export default async function CoBuyingDetail({ params }: { params: Promise<{ bui
       <div className="mt-2 bg-white px-5 py-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-bold text-gray-900 text-[17px]">현재 모집 현황</h3>
-          <span className="text-blue-600 font-bold text-lg">{progressPercent}% 달성</span>
         </div>
 
         <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100">
           <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden mb-3">
             <div
-              className="h-full bg-blue-600 transition-all duration-500 ease-out rounded-full"
+              className={`h-full bg-blue-600 transition-all duration-500 ease-out rounded-full`}
               style={{ width: `${progressPercent}%` }}
             />
           </div>
 
-          <div className="flex justify-between text-[14px]">
-            <span className="font-medium text-gray-900">{detail.currentQuantity}개 신청됨</span>
-            <span className="text-gray-500">목표 {detail.totalQuantity}개</span>
+          <div className="flex justify-start text-[14px]">
+            <span className="font-medium text-gray-900">{detail.currentQuantity}개 신청 / {detail.total_quantity}개 목표</span>
           </div>
         </div>
       </div>
@@ -165,6 +168,8 @@ export default async function CoBuyingDetail({ params }: { params: Promise<{ bui
           buildingId={buildingId} 
           buildingName={building?.name}
           options={options || []} 
+          totalQuantity={detail.totalQuantity}
+          currentQuantity={detail.currentQuantity}
         />
       ) : (
         <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[440px] bg-white border-t border-gray-100 p-4 pb-8 z-30 flex items-center justify-center shadow-[0_-10px_30px_-15px_rgba(0,0,0,0.15)]">
