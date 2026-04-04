@@ -22,15 +22,20 @@ export async function GET(request: Request) {
           .single();
 
         if (!profile) {
-          // New OAuth user: insert row without nickname (null) → profile setup required
-          const name = user.user_metadata?.full_name || '사용자';
+          // New OAuth user: upsert row with all required fields
           const email = user.user_metadata?.email || user.email;
 
-          await supabase.from('users').insert({
-            id: user.id,
-            name: name,
-            email: email,
-          });
+          await supabase.from('users').upsert(
+            {
+              id: user.id,
+              email: email,
+              nickname: null,
+              profile_image_url: null,
+              building_id: null,
+              role: 'USER',
+            },
+            { onConflict: 'id', ignoreDuplicates: true }
+          );
 
           return NextResponse.redirect(`${origin}/auth/setup-profile`);
         }

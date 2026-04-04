@@ -55,14 +55,17 @@ export default function SetupProfilePage() {
         }
       }
 
-      // Update user profile
+      // Update user profile (upsert as fallback in case row doesn't exist)
       const { error: updateError } = await supabase
         .from('users')
-        .update({
-          nickname: nickname,
-          ...(profileImageUrl ? { profile_image_url: profileImageUrl } : {}),
-        })
-        .eq('id', user.id);
+        .upsert(
+          {
+            id: user.id,
+            nickname: nickname.trim(),
+            ...(profileImageUrl ? { profile_image_url: profileImageUrl } : {}),
+          },
+          { onConflict: 'id' }
+        );
 
       if (updateError) throw updateError;
 
