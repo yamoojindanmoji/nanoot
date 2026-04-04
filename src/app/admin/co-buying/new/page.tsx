@@ -409,7 +409,7 @@ export default function NewCoBuyingPage() {
               <div className="flex items-center border border-gray-200 rounded-lg h-10 px-1 bg-white">
                 <button onClick={() => setFormData({ ...formData, hostQuantity: Math.max(1, formData.hostQuantity - 1) })} className="p-1"><Minus size={16} /></button>
                 <span className="w-8 text-center text-sm font-bold">{formData.hostQuantity}</span>
-                <button onClick={() => setFormData({ ...formData, hostQuantity: Math.min(totalQuantity - 1, formData.hostQuantity + 1) })} className="p-1"><Plus size={16} /></button>
+                <button onClick={() => setFormData({ ...formData, hostQuantity: Math.min(totalQuantity, formData.hostQuantity + 1) })} className="p-1"><Plus size={16} /></button>
               </div>
             </div>
             <div className="flex justify-between items-center">
