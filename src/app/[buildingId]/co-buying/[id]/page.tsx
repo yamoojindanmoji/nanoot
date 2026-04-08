@@ -118,9 +118,18 @@ export default async function CoBuyingDetail({ params }: { params: Promise<{ bui
           </span>
         </div>
 
-        <h1 className="text-xl font-bold leading-snug mb-5 text-gray-900 break-keep">
+        <h1 className="text-xl font-bold leading-snug mb-2 text-gray-900 break-keep">
           {detail.title}
         </h1>
+
+        <div className="flex items-baseline gap-1.5 mb-5">
+          <span className="text-xl font-bold text-gray-900">
+            개당 {detail.total_quantity > 0 ? Math.round(detail.total_price / detail.total_quantity).toLocaleString() : 0}원
+          </span>
+          <span className="text-[13px] text-gray-500">
+            ( 전체 {detail.total_price?.toLocaleString()}원 )
+          </span>
+        </div>
 
         <div className="text-[15px] text-gray-700 leading-relaxed whitespace-pre-wrap">
           {detail.description || '반가워요! 이번 공동구매에 대해 소개해 드릴게요.'}
