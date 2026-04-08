@@ -57,7 +57,7 @@ export default async function CoBuyingDetail({ params }: { params: Promise<{ bui
     <div className="flex flex-col flex-1 pb-24 bg-gray-50 relative min-h-screen">
 
       {/* ---------- 1. 고정 헤더 (항상 노출) ---------- */}
-      <header className="fixed top-0 left-0 right-0 z-20 px-4 py-3 flex items-center justify-between bg-gray-100">
+      <header className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[440px] z-20 px-4 py-3 flex items-center justify-between bg-gray-100">
         <Link href="/" className="w-10 h-10 bg-black/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/40 transition-colors">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 18l-6-6 6-6" />
