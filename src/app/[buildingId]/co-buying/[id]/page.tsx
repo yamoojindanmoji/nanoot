@@ -56,8 +56,8 @@ export default async function CoBuyingDetail({ params }: { params: Promise<{ bui
   return (
     <div className="flex flex-col flex-1 pb-24 bg-gray-50 relative min-h-screen">
 
-      {/* ---------- 1. 투명 헤더 (스크롤 시 배경 변하는 것도 가능하지만 일단 뒤로가기만) ---------- */}
-      <header className="absolute top-0 left-0 w-full z-20 px-4 py-3 flex items-center justify-between">
+      {/* ---------- 1. 고정 헤더 (항상 노출) ---------- */}
+      <header className="fixed top-0 left-0 right-0 z-20 px-4 py-3 flex items-center justify-between bg-gray-100">
         <Link href="/" className="w-10 h-10 bg-black/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/40 transition-colors">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 18l-6-6 6-6" />
@@ -72,8 +72,8 @@ export default async function CoBuyingDetail({ params }: { params: Promise<{ bui
         </button>
       </header>
 
-      {/* ---------- 2. 썸네일 영역 ---------- */}
-      <div className="w-full aspect-[4/3] bg-gray-200 relative">
+      {/* ---------- 2. 썸네일 영역 (헤더 높이만큼 아래로) ---------- */}
+      <div className="w-full aspect-[4/3] bg-gray-200 relative mt-[56px]">
         {detail.thumbnailUrl ? (
           <Image src={detail.thumbnailUrl} alt={detail.title} width={400} height={300} className="w-full h-full object-cover" />
         ) : (
