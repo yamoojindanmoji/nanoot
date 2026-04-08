@@ -45,7 +45,7 @@ export function CoBuyingCard({
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   const isExpired = diffTime < 0;
 
-  const dDayText = isExpired ? '마감' : diffDays === 0 ? 'D-Day' : `D-${diffDays}`;
+  const dDayText = isExpired ? '모집 마감' : diffDays === 0 ? 'D-Day' : `D-${diffDays}`;
   const linkHref = href || `/${buildingId}/co-buying/${id}`;
   
   return (
