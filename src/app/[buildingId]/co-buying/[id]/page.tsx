@@ -173,24 +173,17 @@ export default async function CoBuyingDetail({ params }: { params: Promise<{ bui
         </ul>
       </div>
 
-      {/* ---------- 7. 하단 플로팅 참여 버튼 ---------- */}
-      {detail.status === 'RECRUITING' && remainingQuantity > 0 ? (
-        <JoinBottomSheetClient 
-          coBuyingId={id} 
-          buildingId={buildingId} 
-          buildingName={building?.name}
-          options={options || []} 
-          totalQuantity={detail.total_quantity || 0}
-          currentQuantity={detail.currentQuantity || 0}
-          remainingQuantity={remainingQuantity}
-        />
-      ) : (
-        <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[440px] bg-white border-t border-gray-100 p-4 pb-8 z-30 flex items-center justify-center shadow-[0_-10px_30px_-15px_rgba(0,0,0,0.15)]">
-           <div className="w-full h-[52px] bg-gray-200 text-gray-500 rounded-xl font-bold text-[16px] flex items-center justify-center">
-             모집이 마감되었습니다
-           </div>
-        </div>
-      )}
+      {/* ---------- 7. 하단 플로팅 참여 버튼 (상태에 따른 UI는 클라이언트 컴포넌트 내부에서 처리) ---------- */}
+      <JoinBottomSheetClient 
+        coBuyingId={id} 
+        buildingId={buildingId} 
+        buildingName={building?.name}
+        options={options || []} 
+        totalQuantity={detail.total_quantity || 0}
+        currentQuantity={detail.currentQuantity || 0}
+        remainingQuantity={remainingQuantity}
+        status={detail.status}
+      />
     </div>
   );
 }

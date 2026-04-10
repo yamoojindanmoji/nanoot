@@ -23,9 +23,19 @@ interface JoinBottomSheetClientProps {
   totalQuantity: number;
   currentQuantity: number;
   remainingQuantity: number;
+  status: string;
 }
 
-export function JoinBottomSheetClient({ coBuyingId, buildingId, buildingName, options, totalQuantity, currentQuantity, remainingQuantity }: JoinBottomSheetClientProps) {
+export function JoinBottomSheetClient({ 
+  coBuyingId, 
+  buildingId, 
+  buildingName, 
+  options, 
+  totalQuantity, 
+  currentQuantity, 
+  remainingQuantity,
+  status
+}: JoinBottomSheetClientProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
@@ -230,19 +240,27 @@ export function JoinBottomSheetClient({ coBuyingId, buildingId, buildingName, op
     }
   };
 
+  const isClosed = status !== 'RECRUITING' || remainingQuantity <= 0;
+
   return (
     <>
       {/* Detail Page Sticky Bottom Bar */}
       <div 
         style={{ bottom: 'var(--gnb-total-height)' }}
-        className="fixed left-1/2 -translate-x-1/2 w-full max-w-[440px] bg-white border-t border-gray-100 p-4 flex items-center justify-between z-30 shadow-[0_-10px_30px_-15px_rgba(0,0,0,0.15)]"
+        className="fixed left-1/2 -translate-x-1/2 w-full max-w-[440px] bg-white border-t border-gray-100 p-4 pb-8 z-30 flex items-center justify-center shadow-[0_-10px_30px_-15px_rgba(0,0,0,0.15)]"
       >
-        <Button
-          onClick={handleOpen}
-          className="w-full h-[52px] !bg-black !text-white hover:!bg-gray-800 rounded-xl font-bold text-[16px] flex items-center justify-center transition-all shadow-md active:scale-95"
-        >
-          공구 신청하기
-        </Button>
+        {!isClosed ? (
+          <Button
+            onClick={handleOpen}
+            className="w-full h-[52px] !bg-black !text-white hover:!bg-gray-800 rounded-xl font-bold text-[16px] flex items-center justify-center transition-all shadow-md active:scale-95"
+          >
+            공구 신청하기
+          </Button>
+        ) : (
+          <div className="w-full h-[52px] bg-gray-200 text-gray-500 rounded-xl font-bold text-[16px] flex items-center justify-center">
+            모집이 마감되었습니다
+          </div>
+        )}
       </div>
 
       {/* Login Prompt Modal */}
