@@ -174,7 +174,7 @@ export default async function CoBuyingDetail({ params }: { params: Promise<{ bui
       </div>
 
       {/* ---------- 7. 하단 플로팅 참여 버튼 ---------- */}
-      {detail.status === 'RECRUITING' ? (
+      {detail.status === 'RECRUITING' && remainingQuantity > 0 ? (
         <JoinBottomSheetClient 
           coBuyingId={id} 
           buildingId={buildingId} 
