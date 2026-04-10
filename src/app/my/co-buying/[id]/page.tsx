@@ -129,7 +129,7 @@ function DetailPageContent({ params: paramsPromise, searchParams: searchParamsPr
   };
 
   if (isCreator) {
-    const basePricePerItem = detailData.total_price || 0;
+    const basePricePerItem = detailData.total_quantity > 0 ? Math.floor((detailData.total_price || 0) / detailData.total_quantity) : 0;
     const joinersList = allJoiners.map((j: any) => {
       const userObj = Array.isArray(j.users) ? j.users[0] : j.users;
       const opts = (j.joiner_product_details || []).map((detail: any) => {
@@ -184,7 +184,7 @@ function DetailPageContent({ params: paramsPromise, searchParams: searchParamsPr
   }
 
   const joinerDetails = (userJoiner as any).joiner_product_details as any[];
-  const basePricePerItem = detailData.total_price || 0;
+  const basePricePerItem = detailData.total_quantity > 0 ? Math.floor((detailData.total_price || 0) / detailData.total_quantity) : 0;
 
   const initialDetails = joinerDetails && joinerDetails.length > 0
     ? joinerDetails.map((detail: any) => ({

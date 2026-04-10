@@ -87,7 +87,8 @@ export function HostedDetailClient({ coBuyingInfo, joinersList: initialJoinersLi
   
   const totalApplicantCount = joinersList.reduce((sum, j) => sum + j.totalQuantity, 0);
   const totalApplicantPeople = joinersList.length;
-  const totalApplicantPay = coBuyingInfo.totalPrice * totalApplicantCount;
+  const unitPrice = coBuyingInfo.totalQuantity > 0 ? Math.floor(coBuyingInfo.totalPrice / coBuyingInfo.totalQuantity) : 0;
+  const totalApplicantPay = unitPrice * totalApplicantCount;
 
   const handleCloseRecruitment = async () => {
     const confirmMessage = coBuyingInfo.remainingQuantity > 0
