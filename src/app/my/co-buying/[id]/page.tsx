@@ -153,6 +153,24 @@ function DetailPageContent({ params: paramsPromise, searchParams: searchParamsPr
       };
     });
 
+    if (hostQuantity > 0) {
+      const { data: hostUser } = await supabase.from('users').select('name, nickname, profile_image_url').eq('id', user.id).single();
+      joinersList.unshift({
+        id: 'host',
+        userId: user.id,
+        name: hostUser?.nickname || hostUser?.name || '알 수 없음',
+        profileImageUrl: hostUser?.profile_image_url || null,
+        totalQuantity: hostQuantity,
+        totalPay: basePricePerItem * hostQuantity,
+        payStatus: 'PAID',
+        options: [{
+          optionName: detailData.title || '기본 상품',
+          quantity: hostQuantity,
+          totalPrice: basePricePerItem * hostQuantity
+        }]
+      });
+    }
+
     return (
       <div className="flex flex-col flex-1 bg-gray-50 min-h-screen relative">
         <HostedDetailClient coBuyingInfo={coBuyingInfo as any} joinersList={joinersList} />

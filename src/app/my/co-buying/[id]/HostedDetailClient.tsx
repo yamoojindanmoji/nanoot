@@ -85,10 +85,8 @@ export function HostedDetailClient({ coBuyingInfo, joinersList: initialJoinersLi
   const paidCount = joinersList.filter(j => j.payStatus === 'PAID').length;
   const unpaidCount = joinersList.filter(j => j.payStatus === 'UNPAID').length;
   
-  const hostQuantity = coBuyingInfo.hostQuantity || 0;
-  const joinerTotalQuantity = joinersList.reduce((sum, j) => sum + j.totalQuantity, 0);
-  const totalApplicantCount = joinerTotalQuantity + hostQuantity;
-  const totalApplicantPeople = joinersList.length + (hostQuantity > 0 ? 1 : 0);
+  const totalApplicantCount = joinersList.reduce((sum, j) => sum + j.totalQuantity, 0);
+  const totalApplicantPeople = joinersList.length;
   const totalApplicantPay = coBuyingInfo.totalPrice * totalApplicantCount;
 
   const handleCloseRecruitment = async () => {
@@ -263,7 +261,7 @@ export function HostedDetailClient({ coBuyingInfo, joinersList: initialJoinersLi
                         </span>
                       </div>
                       {/* Pay status toggle (payment_waiting only) */}
-                      {isPaymentWaiting && (
+                      {isPaymentWaiting && joiner.id !== 'host' && (
                         <button
                           onClick={() => togglePayStatus(joiner.id, joiner.payStatus)}
                           className={`text-[11px] font-bold px-2 py-0.5 rounded-full border transition-colors ${
