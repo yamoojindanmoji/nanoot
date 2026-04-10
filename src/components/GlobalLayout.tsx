@@ -58,7 +58,10 @@ export function GlobalLayout({ children }: { children: React.ReactNode }) {
         
         {/* Floating Action Button - Only visible on home page */}
         {showNav && isHome && (
-          <div className="fixed bottom-[80px] left-1/2 -translate-x-1/2 w-full max-w-[440px] pointer-events-none z-30">
+          <div 
+            style={{ bottom: 'var(--fab-bottom-offset)' }}
+            className="fixed left-1/2 -translate-x-1/2 w-full max-w-[440px] pointer-events-none z-30"
+          >
             <button 
               onClick={handleFabClick}
               className="absolute right-4 bottom-0 w-14 h-14 bg-black text-white rounded-full flex items-center justify-center shadow-lg hover:bg-gray-800 transition-all active:scale-95 pointer-events-auto"

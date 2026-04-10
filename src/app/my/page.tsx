@@ -56,7 +56,7 @@ export default function MyPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col flex-1 pb-20 bg-gray-50 min-h-screen">
+      <div className="flex flex-col flex-1 pb-20 bg-gray-50 min-h-[100dvh]">
         {/* Header Skeleton */}
         <header className="sticky top-0 bg-white/80 backdrop-blur-md z-10 px-4 py-4 flex items-center justify-center border-b border-gray-100">
           <Skeleton className="w-20 h-6" />
@@ -97,7 +97,7 @@ export default function MyPage() {
   const building = Array.isArray(profile?.buildings) ? profile.buildings[0] : profile?.buildings;
 
   return (
-    <div className="flex flex-col flex-1 pb-20 bg-gray-50 min-h-screen">
+    <div className="flex flex-col flex-1 pb-20 bg-gray-50 min-h-[100dvh]">
       {/* Header */}
       <header className="sticky top-0 bg-white/80 backdrop-blur-md z-10 px-4 py-4 flex items-center justify-center border-b border-gray-100">
         <h1 className="text-lg font-bold text-gray-900">마이나눗</h1>

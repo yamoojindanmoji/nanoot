@@ -18,6 +18,14 @@ export const metadata: Metadata = {
   description: "이웃과 함께하는 스마트 공동구매 서비스",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -26,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning>
-        <div className="mx-auto max-w-[440px] min-h-screen bg-white shadow-xl flex flex-col relative overflow-hidden">
+        <div className="mx-auto max-w-[440px] min-h-[100dvh] bg-white shadow-xl flex flex-col relative overflow-hidden">
           <GlobalLayout>
             {children}
           </GlobalLayout>

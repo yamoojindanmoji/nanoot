@@ -164,7 +164,7 @@ export default function Home() {
   const displayCategories = [{ value: '전체', emoji: '📦' }, ...CATEGORIES];
 
   return (
-    <div className="flex flex-col flex-1 pb-20">
+    <div className="flex flex-col flex-1 pb-20 min-h-[100dvh]">
       {/* Header */}
       <header className="sticky top-0 bg-white/80 backdrop-blur-md z-10 px-4 py-4 border-b border-gray-100 flex items-center justify-between">
         <h1 className="text-xl font-bold">{building?.name || '우리 건물'} 나눗</h1>

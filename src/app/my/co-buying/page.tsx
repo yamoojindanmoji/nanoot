@@ -141,7 +141,7 @@ function MyCoBuyingPageContent() {
   const isEmpty = ongoingItems.length === 0 && finishedItems.length === 0;
 
   return (
-    <div className="flex flex-col flex-1 pb-20 bg-gray-50 min-h-screen">
+    <div className="flex flex-col flex-1 pb-20 bg-gray-50 min-h-[100dvh]">
       <header className="sticky top-0 bg-white z-20 flex flex-col items-center justify-center border-b border-gray-100">
         <h1 className="text-[17px] font-bold text-gray-900 py-4">내 공구</h1>
         <div className="flex w-full px-4 pt-1">
