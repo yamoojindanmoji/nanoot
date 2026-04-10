@@ -20,6 +20,7 @@ function DetailPageContent({ params: paramsPromise, searchParams: searchParamsPr
   const [allJoiners, setAllJoiners] = useState<any[]>([]);
   const [userJoiner, setUserJoiner] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [hostProfile, setHostProfile] = useState<any>(null);
 
   const supabase = createClient();
 
@@ -93,6 +94,17 @@ function DetailPageContent({ params: paramsPromise, searchParams: searchParamsPr
         .single();
       
       setUserJoiner(uJoiner);
+
+      // Fetch host profile if needed for hosted view
+      if (cb.creator_id === currentUser.id) {
+        const { data: hProfile } = await supabase
+          .from('users')
+          .select('name, nickname, profile_image_url')
+          .eq('id', currentUser.id)
+          .single();
+        setHostProfile(hProfile);
+      }
+
       setIsLoading(false);
     };
 
@@ -154,12 +166,11 @@ function DetailPageContent({ params: paramsPromise, searchParams: searchParamsPr
     });
 
     if (hostQuantity > 0) {
-      const { data: hostUser } = await supabase.from('users').select('name, nickname, profile_image_url').eq('id', user.id).single();
       joinersList.unshift({
         id: 'host',
         userId: user.id,
-        name: hostUser?.nickname || hostUser?.name || '알 수 없음',
-        profileImageUrl: hostUser?.profile_image_url || null,
+        name: hostProfile?.nickname || hostProfile?.name || '알 수 없음',
+        profileImageUrl: hostProfile?.profile_image_url || null,
         totalQuantity: hostQuantity,
         totalPay: basePricePerItem * hostQuantity,
         payStatus: 'PAID',
