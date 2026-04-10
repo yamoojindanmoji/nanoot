@@ -89,6 +89,7 @@ function MyCoBuyingPageContent() {
             status,
             total_price,
             total_quantity,
+            host_quantity,
             deadline,
             image_url
           `)
@@ -102,7 +103,11 @@ function MyCoBuyingPageContent() {
               .select('joiner_total_quantity, joiner_total_pay')
               .eq('co_buying_id', cb.id);
             
-            const currentTotalQuantity = allJoiners?.reduce((sum: number, j: any) => sum + j.joiner_total_quantity, 0) || 0;
+            const joinerTotalQuantity = allJoiners?.reduce((sum: number, j: any) => sum + j.joiner_total_quantity, 0) || 0;
+            const joinerTotalPay = allJoiners?.reduce((sum: number, j: any) => sum + j.joiner_total_pay, 0) || 0;
+            
+            const hostQuantity = cb.host_quantity || 0;
+            const currentTotalQuantity = joinerTotalQuantity + hostQuantity;
             const remaining = Math.max(0, cb.total_quantity - currentTotalQuantity);
 
             return {
@@ -110,7 +115,7 @@ function MyCoBuyingPageContent() {
               title: cb.title,
               status: cb.status,
               myQuantity: currentTotalQuantity,
-              myTotalPay: cb.total_price * currentTotalQuantity,
+              myTotalPay: joinerTotalPay,
               remainingQuantity: remaining,
               quantityLabel: '모집',
               thumbnailUrl: cb.image_url || 'https://images.unsplash.com/photo-1590481845199-3543ebce321f?q=80&w=2670&auto=format&fit=crop',
