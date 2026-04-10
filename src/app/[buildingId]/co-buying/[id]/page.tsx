@@ -157,6 +157,15 @@ export default async function CoBuyingDetail({ params }: { params: Promise<{ bui
         </div>
       </div>
 
+      {/* 모집 마감 시 안내 문구 인라인 표시 */}
+      {(detail.status !== 'RECRUITING' || remainingQuantity <= 0) && (
+        <div className="px-5 mt-2">
+          <div className="w-full h-[52px] bg-gray-100 text-gray-400 rounded-xl font-bold text-[16px] flex items-center justify-center">
+            모집이 마감되었습니다
+          </div>
+        </div>
+      )}
+
       {/* ---------- 6. 안내 사항 (픽업 위주 등) ---------- */}
       <div className="mt-2 bg-white px-5 py-6 mb-8">
         <h3 className="font-bold text-gray-900 text-[17px] mb-4">공동구매 안내</h3>
