@@ -21,9 +21,10 @@ interface JoinBottomSheetClientProps {
   options: ProductOption[];
   totalQuantity: number;
   currentQuantity: number;
+  remainingQuantity: number;
 }
 
-export function JoinBottomSheetClient({ coBuyingId, buildingId, buildingName, options, totalQuantity, currentQuantity }: JoinBottomSheetClientProps) {
+export function JoinBottomSheetClient({ coBuyingId, buildingId, buildingName, options, totalQuantity, currentQuantity, remainingQuantity }: JoinBottomSheetClientProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
@@ -43,6 +44,11 @@ export function JoinBottomSheetClient({ coBuyingId, buildingId, buildingName, op
   }, [supabase]);
 
   const handleOpen = async () => {
+    if (remainingQuantity === 0) {
+      alert('현재 모집 수량이 가득 찼어요. 공구 모집이 마감되었습니다');
+      return;
+    }
+
     if (!user) {
       setIsLoginModalOpen(true);
       return;
@@ -81,16 +87,18 @@ export function JoinBottomSheetClient({ coBuyingId, buildingId, buildingName, op
   const totalSelectedCount = Object.values(quantities).reduce((a, b) => a + b, 0);
 
   const handlePlus = (id: string, max: number | null) => {
-    // 잔여 수량 계산
-    const remainingCapacity = totalQuantity - currentQuantity;
-    
-    if (totalSelectedCount >= remainingCapacity) {
-      alert(`${remainingCapacity}개까지만 신청 가능합니다.`);
-      return;
-    }
+    setQuantities(prev => {
+      const currentTotal = Object.values(prev).reduce((a, b: number) => a + b, 0);
+      if (currentTotal >= remainingQuantity) {
+        alert(`현재 ${remainingQuantity}개까지만 신청 가능해요`);
+        return prev;
+      }
 
-    const limit = max === null ? 999 : max;
-    setQuantities(prev => ({ ...prev, [id]: Math.min(limit, (prev[id] || 0) + 1) }));
+      const limit = max === null ? 999 : max;
+      if ((prev[id] || 0) >= limit) return prev;
+
+      return { ...prev, [id]: (prev[id] || 0) + 1 };
+    });
   };
 
   const totalPay = options.length > 0
@@ -114,7 +122,35 @@ export function JoinBottomSheetClient({ coBuyingId, buildingId, buildingName, op
         return;
       }
 
-      // Check current available quantities
+      // 0. Check current available total quantities (Server-side re-verification)
+      const { data: latestCB } = await supabase
+        .from('co_buyings')
+        .select('total_quantity, host_quantity')
+        .eq('id', coBuyingId)
+        .single();
+      
+      const { data: latestJoiners } = await supabase
+        .from('joiners')
+        .select('joiner_total_quantity')
+        .eq('co_buying_id', coBuyingId);
+      
+      if (latestCB) {
+        const latestHostQty = latestCB.host_quantity || 0;
+        const latestJoinersQty = latestJoiners?.reduce((sum, j) => sum + j.joiner_total_quantity, 0) || 0;
+        const latestCurrentQty = latestHostQty + latestJoinersQty;
+        const latestRemaining = Math.max(0, latestCB.total_quantity - latestCurrentQty);
+
+        if (totalCount > latestRemaining) {
+          alert(latestRemaining > 0 
+            ? `죄송합니다. 그 사이 다른 분이 먼저 신청하여 현재 ${latestRemaining}개만 신청 가능합니다.`
+            : '죄송합니다. 그 사이 모집이 마감되었습니다.');
+          handleClose();
+          window.location.reload();
+          return;
+        }
+      }
+
+      // 0.5 Check current available option quantities
       for (const opt of options) {
         if (opt.remain_quantity !== null && quantities[opt.id] > 0) {
           const { data: latestOpt } = await supabase
@@ -246,8 +282,8 @@ export function JoinBottomSheetClient({ coBuyingId, buildingId, buildingName, op
                       <span className="w-8 text-center text-[14px] font-bold text-gray-900">{quantities[opt.id]}</span>
                       <button 
                         onClick={() => handlePlus(opt.id, opt.remain_quantity)}
-                        className="flex-1 h-full flex items-center justify-center text-gray-500 hover:bg-gray-200"
-                        disabled={isSubmitting}
+                        className="flex-1 h-full flex items-center justify-center text-gray-500 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                        disabled={isSubmitting || totalSelectedCount >= remainingQuantity}
                       >
                         +
                       </button>
@@ -268,8 +304,8 @@ export function JoinBottomSheetClient({ coBuyingId, buildingId, buildingName, op
                     <span className="w-8 text-center text-[14px] font-bold text-gray-900">{quantities['default'] || 0}</span>
                     <button 
                       onClick={() => handlePlus('default', null)}
-                      className="flex-1 h-full flex items-center justify-center text-gray-500 hover:bg-gray-200"
-                      disabled={isSubmitting}
+                      className="flex-1 h-full flex items-center justify-center text-gray-500 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                      disabled={isSubmitting || totalSelectedCount >= remainingQuantity}
                     >
                       +
                     </button>
