@@ -126,7 +126,7 @@ function DetailPageContent({ params: paramsPromise, searchParams: searchParamsPr
   };
 
   if (isCreator) {
-    const basePricePerItem = detailData.total_price ? (detailData.total_price / detailData.total_quantity) : 0;
+    const basePricePerItem = detailData.total_price || 0;
     const joinersList = allJoiners.map((j: any) => {
       const userObj = Array.isArray(j.users) ? j.users[0] : j.users;
       const opts = (j.joiner_product_details || []).map((detail: any) => {
@@ -144,7 +144,7 @@ function DetailPageContent({ params: paramsPromise, searchParams: searchParamsPr
         name: userObj?.nickname || userObj?.name || '알 수 없음',
         profileImageUrl: userObj?.profile_image_url || null,
         totalQuantity: j.joiner_total_quantity,
-        totalPay: j.joiner_total_pay || (opts.reduce((sum: number, opt: any) => sum + opt.totalPrice, 0)),
+        totalPay: basePricePerItem * j.joiner_total_quantity,
         payStatus: (j.pay_status || 'UNPAID') as 'PAID' | 'UNPAID',
         options: opts,
       };
@@ -163,7 +163,7 @@ function DetailPageContent({ params: paramsPromise, searchParams: searchParamsPr
   }
 
   const joinerDetails = (userJoiner as any).joiner_product_details as any[];
-  const basePricePerItem = detailData.total_price ? (detailData.total_price / detailData.total_quantity) : 0;
+  const basePricePerItem = detailData.total_price || 0;
 
   const initialDetails = joinerDetails && joinerDetails.length > 0
     ? joinerDetails.map((detail: any) => ({

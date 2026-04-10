@@ -84,7 +84,7 @@ export function HostedDetailClient({ coBuyingInfo, joinersList: initialJoinersLi
   const paidCount = joinersList.filter(j => j.payStatus === 'PAID').length;
   const unpaidCount = joinersList.filter(j => j.payStatus === 'UNPAID').length;
   const totalApplicantCount = joinersList.reduce((sum, j) => sum + j.totalQuantity, 0);
-  const totalApplicantPay = joinersList.reduce((sum, j) => sum + (j.totalPay || 0), 0);
+  const totalApplicantPay = coBuyingInfo.totalPrice * totalApplicantCount;
 
   const handleCloseRecruitment = async () => {
     const confirmMessage = coBuyingInfo.remainingQuantity > 0

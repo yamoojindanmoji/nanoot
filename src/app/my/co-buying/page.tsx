@@ -115,7 +115,7 @@ function MyCoBuyingPageContent() {
               title: cb.title,
               status: cb.status,
               myQuantity: currentTotalQuantity,
-              myTotalPay: joinerTotalPay,
+              myTotalPay: cb.total_price,
               remainingQuantity: remaining,
               quantityLabel: '모집',
               thumbnailUrl: cb.image_url || 'https://images.unsplash.com/photo-1590481845199-3543ebce321f?q=80&w=2670&auto=format&fit=crop',
