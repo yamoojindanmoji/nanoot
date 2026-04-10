@@ -30,9 +30,6 @@ export function GlobalLayout({ children }: { children: React.ReactNode }) {
           .eq('id', user.id)
           .single();
         setUserRole(profile?.role || 'USER');
-        
-        // Register Push Notification after login
-        registerPushNotification();
       }
     };
     checkUser();
