@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { createClient } from '@/lib/supabase/client';
 import { LoginPromptModal } from '@/components/LoginPromptModal';
 import { VerificationRequiredModal } from '@/components/VerificationRequiredModal';
+import { Toast } from '@/components/ui/Toast';
 
 export interface ProductOption {
   id: string;
@@ -31,6 +32,7 @@ export function JoinBottomSheetClient({ coBuyingId, buildingId, buildingName, op
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [toastMessage, setToastMessage] = useState('');
   
   const router = useRouter();
   const supabase = createClient();
@@ -90,7 +92,7 @@ export function JoinBottomSheetClient({ coBuyingId, buildingId, buildingName, op
     setQuantities(prev => {
       const currentTotal = Object.values(prev).reduce((a, b: number) => a + b, 0);
       if (currentTotal >= remainingQuantity) {
-        alert(`현재 ${remainingQuantity}개까지만 신청 가능해요`);
+        setToastMessage(`딱 ${remainingQuantity}개 남았어요! 최대 수량으로 신청할게요.`);
         return prev;
       }
 
@@ -283,7 +285,7 @@ export function JoinBottomSheetClient({ coBuyingId, buildingId, buildingName, op
                       <button 
                         onClick={() => handlePlus(opt.id, opt.remain_quantity)}
                         className="flex-1 h-full flex items-center justify-center text-gray-500 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
-                        disabled={isSubmitting || totalSelectedCount >= remainingQuantity}
+                        disabled={isSubmitting}
                       >
                         +
                       </button>
@@ -305,7 +307,7 @@ export function JoinBottomSheetClient({ coBuyingId, buildingId, buildingName, op
                     <button 
                       onClick={() => handlePlus('default', null)}
                       className="flex-1 h-full flex items-center justify-center text-gray-500 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
-                      disabled={isSubmitting || totalSelectedCount >= remainingQuantity}
+                      disabled={isSubmitting}
                     >
                       +
                     </button>
@@ -329,6 +331,10 @@ export function JoinBottomSheetClient({ coBuyingId, buildingId, buildingName, op
           </div>
         </div>
       )}
+      <Toast 
+        message={toastMessage} 
+        onClose={() => setToastMessage('')} 
+      />
     </>
   );
 }
