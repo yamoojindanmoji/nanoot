@@ -131,7 +131,7 @@ export function RequestCoBuyingBottomSheet({ isOpen, onClose }: RequestCoBuyingB
                 onChange={(e) => setProductName(e.target.value)}
                 className="!h-14 !text-[16px] !rounded-2xl !bg-gray-50 !border-gray-100 focus:!bg-white focus:!border-gray-900 transition-all"
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleSubmit();
+                  if (e.key === 'Enter' && !e.nativeEvent.isComposing) handleSubmit();
                 }}
               />
               <span className="text-[12px] text-gray-400 px-1">
