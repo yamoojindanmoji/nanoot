@@ -15,6 +15,7 @@ interface RequestCoBuyingBottomSheetProps {
 export function RequestCoBuyingBottomSheet({ isOpen, onClose }: RequestCoBuyingBottomSheetProps) {
   const [productName, setProductName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
   const [toastMessage, setToastMessage] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
@@ -30,11 +31,14 @@ export function RequestCoBuyingBottomSheet({ isOpen, onClose }: RequestCoBuyingB
   }, [isOpen]);
 
   const handleSubmit = async () => {
+    if (isSubmittingRef.current) return;
+
     if (!productName.trim()) {
       alert('상품명을 입력해주세요.');
       return;
     }
 
+    isSubmittingRef.current = true;
     setIsSubmitting(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -85,6 +89,7 @@ export function RequestCoBuyingBottomSheet({ isOpen, onClose }: RequestCoBuyingB
         alert('신청 중 오류가 발생했습니다. 다시 시도해주세요.');
       }
     } finally {
+      isSubmittingRef.current = false;
       setIsSubmitting(false);
     }
   };
