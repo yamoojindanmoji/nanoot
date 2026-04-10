@@ -108,7 +108,9 @@ function DetailPageContent({ params: paramsPromise, searchParams: searchParamsPr
   }
 
   const isCreator = detailData.creator_id === user.id && from !== 'participated';
-  const currentTotalQuantity = allJoiners.reduce((sum, j) => sum + j.joiner_total_quantity, 0);
+  const joinerTotalQuantity = allJoiners.reduce((sum, j) => sum + j.joiner_total_quantity, 0);
+  const hostQuantity = detailData.host_quantity || 0;
+  const currentTotalQuantity = joinerTotalQuantity + hostQuantity;
   const remainingQuantity = Math.max(0, detailData.total_quantity - currentTotalQuantity);
 
   const coBuyingInfo = {
@@ -117,6 +119,7 @@ function DetailPageContent({ params: paramsPromise, searchParams: searchParamsPr
     status: detailData.status,
     totalPrice: detailData.total_price || 0,
     totalQuantity: detailData.total_quantity,
+    hostQuantity: hostQuantity,
     currentQuantity: currentTotalQuantity,
     remainingQuantity: remainingQuantity,
     deadline: detailData.deadline,

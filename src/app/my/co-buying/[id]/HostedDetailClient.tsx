@@ -32,6 +32,7 @@ interface HostedDetailClientProps {
     status: 'RECRUITING' | 'PAYMENT_WAITING' | 'ORDER_IN_PROGRESS' | 'READY_FOR_PICKUP' | 'COMPLETED' | 'CANCELLED' | 'RECRUITING_FAILED';
     totalPrice: number;
     totalQuantity: number;
+    hostQuantity: number;
     currentQuantity: number;
     remainingQuantity: number;
     deadline: string;
@@ -83,7 +84,11 @@ export function HostedDetailClient({ coBuyingInfo, joinersList: initialJoinersLi
   const isPaymentWaiting = coBuyingInfo.status === 'PAYMENT_WAITING';
   const paidCount = joinersList.filter(j => j.payStatus === 'PAID').length;
   const unpaidCount = joinersList.filter(j => j.payStatus === 'UNPAID').length;
-  const totalApplicantCount = joinersList.reduce((sum, j) => sum + j.totalQuantity, 0);
+  
+  const hostQuantity = coBuyingInfo.hostQuantity || 0;
+  const joinerTotalQuantity = joinersList.reduce((sum, j) => sum + j.totalQuantity, 0);
+  const totalApplicantCount = joinerTotalQuantity + hostQuantity;
+  const totalApplicantPeople = joinersList.length + (hostQuantity > 0 ? 1 : 0);
   const totalApplicantPay = coBuyingInfo.totalPrice * totalApplicantCount;
 
   const handleCloseRecruitment = async () => {
@@ -199,7 +204,7 @@ export function HostedDetailClient({ coBuyingInfo, joinersList: initialJoinersLi
             <>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-[14px] text-gray-500">총 신청 인원</span>
-                <span className="text-[14px] font-semibold text-gray-900">{joinersList.length}명</span>
+                <span className="text-[14px] font-semibold text-gray-900">{totalApplicantPeople}명</span>
               </div>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-[14px] text-gray-500">총 신청 수량</span>
