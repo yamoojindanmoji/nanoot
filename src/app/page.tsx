@@ -184,12 +184,7 @@ export default function Home() {
         </div>
       </header>
       
-      {/* Banner */}
-      <div className="bg-[#D2E762] py-3.5 px-4 text-center">
-        <p className="text-[13px] font-bold text-black leading-tight">
-          우리 건물에서 진행중인 공구 상품을 확인해보세요!
-        </p>
-      </div>
+
 
       {/* Tabs */}
       <div 
