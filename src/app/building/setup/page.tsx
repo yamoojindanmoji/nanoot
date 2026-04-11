@@ -204,7 +204,69 @@ function BuildingSearchView() {
 // ── query param에 따라 뷰 분기 ─────────────────────────────────────
 function BuildingSetupContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const supabase = createClient();
   const buildingId = searchParams.get('buildingId');
+  const inviteCode = searchParams.get('invite');
+  
+  const [isAutoSelecting, setIsAutoSelecting] = useState(!!inviteCode);
+
+  useEffect(() => {
+    if (!inviteCode) return;
+
+    const autoSelectBuilding = async () => {
+      try {
+        // 1. 초대 코드로 건물 찾기
+        const { data: building, error: findError } = await supabase
+          .from('buildings')
+          .select('id')
+          .eq('invite_code', inviteCode)
+          .single();
+
+        if (findError || !building) {
+          console.warn('Invalid invite code:', inviteCode);
+          setIsAutoSelecting(false);
+          return;
+        }
+
+        // 2. 현재 사용자 정보 가져오기
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          router.replace('/');
+          return;
+        }
+
+        // 3. 사용자 건물 업데이트
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({ building_id: building.id })
+          .eq('id', user.id);
+
+        if (updateError) {
+          console.error('Error updating user building:', updateError);
+          setIsAutoSelecting(false);
+          return;
+        }
+
+        // 4. 홈으로 이동
+        router.replace('/');
+      } catch (error) {
+        console.error('Auto selection failed:', error);
+        setIsAutoSelecting(false);
+      }
+    };
+
+    autoSelectBuilding();
+  }, [inviteCode, supabase, router]);
+
+  if (isAutoSelecting) {
+    return (
+      <div className="flex flex-col flex-1 items-center justify-center p-6 bg-white min-h-[100dvh]">
+        <div className="w-10 h-10 border-4 border-[#84CC16] border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-gray-500 font-medium">건물 정보를 불러오는 중...</p>
+      </div>
+    );
+  }
 
   if (buildingId) {
     return <CodeEntryView buildingId={buildingId} />;

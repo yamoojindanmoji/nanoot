@@ -57,7 +57,7 @@ export default function Home() {
 
     if (!bId) {
       // Logged-in but no building → send to building setup
-      router.replace('/building/setup');
+      router.replace(`/building/setup${window.location.search}`);
       setIsLoading(false);
       return;
     }
