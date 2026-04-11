@@ -58,20 +58,29 @@ export default function NotificationsPage() {
       console.error('Error fetching notifications:', error);
     } else {
       setNotifications(data || []);
-      
-      // Mark all as read when entering the page
-      if (data && data.length > 0) {
-        const unreadIds = data.filter(n => !n.is_read).map(n => n.id);
-        if (unreadIds.length > 0) {
-          await supabase
-            .from('notifications')
-            .update({ is_read: true })
-            .in('id', unreadIds);
-        }
-      }
     }
     setIsLoading(false);
   }, [supabase, router]);
+
+  const markAsRead = async (id: string, linkUrl?: string) => {
+    // Optimistic update
+    setNotifications(prev => 
+      prev.map(n => n.id === id ? { ...n, is_read: true } : n)
+    );
+
+    try {
+      await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('id', id);
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+
+    if (linkUrl && linkUrl !== '#') {
+      router.push(linkUrl);
+    }
+  };
 
   useEffect(() => {
     fetchNotifications();
@@ -112,23 +121,26 @@ export default function NotificationsPage() {
         ) : (
           <div className="flex flex-col">
             {notifications.map((notification) => (
-              <Link
+              <div
                 key={notification.id}
-                href={notification.link_url || '#'}
-                className={`px-5 py-5 border-b border-gray-50 active:bg-gray-50 transition-colors ${!notification.is_read ? 'bg-blue-50/30' : ''}`}
+                onClick={() => markAsRead(notification.id, notification.link_url)}
+                className={`px-5 py-5 border-b border-gray-50 active:bg-gray-50 transition-colors cursor-pointer relative ${!notification.is_read ? 'bg-blue-50/40' : ''}`}
               >
+                {!notification.is_read && (
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500" />
+                )}
                 <div className="flex justify-between items-start mb-1">
-                  <h3 className="font-bold text-[15px] text-gray-900 truncate pr-4 flex-1">
+                  <h3 className={`font-bold text-[15px] truncate pr-4 flex-1 ${notification.is_read ? 'text-gray-500' : 'text-gray-900'}`}>
                     {notification.title}
                   </h3>
                   <span className="text-[12px] text-gray-400 whitespace-nowrap flex-shrink-0">
                     {formatNotificationTime(notification.created_at)}
                   </span>
                 </div>
-                <p className="text-[14px] text-gray-600 leading-snug line-clamp-2">
+                <p className={`text-[14px] leading-snug line-clamp-2 ${notification.is_read ? 'text-gray-400' : 'text-gray-600'}`}>
                   {notification.content}
                 </p>
-              </Link>
+              </div>
             ))}
           </div>
         )}

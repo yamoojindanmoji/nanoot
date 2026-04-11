@@ -124,17 +124,46 @@ export function HostedDetailClient({ coBuyingInfo, joinersList: initialJoinersLi
     }
   };
 
-  const sendPaymentNotice = (joinerName: string) => {
-    setToastMessage(`${joinerName}님에게 입금 안내를 발송했습니다.`);
+  const sendPaymentNotice = async (joinerId: string, joinerName: string) => {
+    try {
+      const { error } = await supabase.from('notifications').insert({
+        user_id: joinerId,
+        title: `${coBuyingInfo.title} 입금안내`,
+        content: '오픈채팅방에서 입금을 완료해주세요!',
+        is_read: false
+      });
+      if (error) throw error;
+      setToastMessage(`${joinerName}님에게 입금 안내를 발송했습니다.`);
+    } catch (error) {
+      console.error(error);
+      setToastMessage('알림 발송에 실패했습니다.');
+    }
   };
 
-  const sendAllPaymentNotice = () => {
-    const unpaidNames = joinersList.filter(j => j.payStatus === 'UNPAID').map(j => j.name);
-    if (unpaidNames.length === 0) {
+  const sendAllPaymentNotice = async () => {
+    const unpaidJoiners = joinersList.filter(j => j.payStatus === 'UNPAID');
+    if (unpaidJoiners.length === 0) {
       setToastMessage('미입금자가 없습니다.');
       return;
     }
-    setToastMessage(`${unpaidNames.join(', ')}님에게 입금 안내를 발송했습니다.`);
+
+    try {
+      const notifications = unpaidJoiners.map(j => ({
+        user_id: j.userId,
+        title: `${coBuyingInfo.title} 입금안내`,
+        content: '오픈채팅방에서 입금을 완료해주세요!',
+        is_read: false
+      }));
+
+      const { error } = await supabase.from('notifications').insert(notifications);
+      if (error) throw error;
+
+      const unpaidNames = unpaidJoiners.map(j => j.name);
+      setToastMessage(`${unpaidNames.join(', ')}님에게 입금 안내를 발송했습니다.`);
+    } catch (error) {
+      console.error(error);
+      setToastMessage('알림 발송에 실패했습니다.');
+    }
   };
 
   return (
@@ -293,7 +322,7 @@ export function HostedDetailClient({ coBuyingInfo, joinersList: initialJoinersLi
                   {isPaymentWaiting && !isPaid && (
                     <div className="mt-3 pt-3 border-t border-gray-100">
                       <button
-                        onClick={() => sendPaymentNotice(joiner.name)}
+                        onClick={() => sendPaymentNotice(joiner.userId, joiner.name)}
                         className="w-full text-[13px] font-bold text-gray-500 border border-gray-200 rounded-lg py-2 hover:bg-gray-50 transition-colors"
                       >
                         입금 안내 알림 보내기

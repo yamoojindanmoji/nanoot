@@ -169,9 +169,6 @@ export default function Home() {
       <header className="sticky top-0 bg-white/80 backdrop-blur-md z-10 px-4 py-4 border-b border-gray-100 flex items-center justify-between">
         <h1 className="text-xl font-bold">{building?.name || '우리 건물'} 나눗</h1>
         <div className="flex items-center gap-2">
-          <button className="w-8 h-8 flex items-center justify-center text-gray-600 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">
-            <Search size={18} />
-          </button>
           <Link 
             href="/notifications" 
             className="w-8 h-8 flex items-center justify-center text-gray-600 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors relative"
