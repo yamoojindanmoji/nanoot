@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Image from 'next/image';
+import { PWAInstallModal } from './PWAInstallModal';
 
 interface OnboardingProps {
   onComplete: () => void;
@@ -63,6 +64,7 @@ const slides = [
 export function Onboarding({ onComplete }: OnboardingProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
 
   const scrollNext = useCallback(() => {
     if (emblaApi) emblaApi.scrollNext();
@@ -179,10 +181,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                 스킵
               </button>
               <button
-                onClick={() => {
-                  alert('안내페이지 제작 예정입니다.');
-                  onComplete();
-                }}
+                onClick={() => setIsInstallModalOpen(true)}
                 className="flex-1 bg-[#B9F115] text-black font-bold rounded-xl text-[16px] hover:bg-[#A3E635] active:bg-[#84cc16] transition-colors"
               >
                 홈화면에 추가하기
@@ -191,6 +190,14 @@ export function Onboarding({ onComplete }: OnboardingProps) {
           )}
         </div>
       </div>
+
+      <PWAInstallModal 
+        isOpen={isInstallModalOpen}
+        onClose={() => {
+          setIsInstallModalOpen(false);
+          onComplete();
+        }}
+      />
     </div>
   );
 }
