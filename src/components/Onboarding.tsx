@@ -156,12 +156,20 @@ export function Onboarding({ onComplete }: OnboardingProps) {
         {/* Buttons */}
         <div className="w-full flex gap-3 h-[52px]">
           {!isLastSlide ? (
-            <button
-              onClick={scrollNext}
-              className="flex-1 bg-[#B9F115] text-black font-bold rounded-xl text-[16px] hover:bg-[#A3E635] active:bg-[#84cc16] transition-colors"
-            >
-              계속하기
-            </button>
+            <>
+              <button
+                onClick={onComplete}
+                className="w-[100px] bg-gray-100 text-gray-500 font-semibold rounded-xl text-[16px] active:bg-gray-200 transition-colors"
+              >
+                스킵
+              </button>
+              <button
+                onClick={scrollNext}
+                className="flex-1 bg-[#B9F115] text-black font-bold rounded-xl text-[16px] hover:bg-[#A3E635] active:bg-[#84cc16] transition-colors"
+              >
+                계속하기
+              </button>
+            </>
           ) : (
             <>
               <button
