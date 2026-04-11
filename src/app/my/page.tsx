@@ -122,12 +122,16 @@ export default function MyPage() {
           <MenuLink 
              icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>} 
              title="건물 단톡방" 
-             href={isBuildingVerified && building?.open_chat_link ? building.open_chat_link : '#'} 
-             target={isBuildingVerified && building?.open_chat_link ? '_blank' : undefined}
-             onClick={(!isBuildingVerified || !building?.open_chat_link) ? () => alert('등록된 건물 단톡방이 없습니다.') : undefined}
+             href="https://open.kakao.com/o/gWfJaCfi" 
+             target="_blank"
            />
           <MenuLink icon={<Info size={20} />} title="공지사항 / 서비스안내" href="/my/notices" />
-          <MenuLink icon={<HelpCircle size={20} />} title="문의하기" href="/my/contact" />
+          <MenuLink 
+            icon={<HelpCircle size={20} />} 
+            title="문의하기" 
+            href="https://open.kakao.com/o/gWfJaCfi"
+            target="_blank"
+          />
         </div>
       </div>
 
