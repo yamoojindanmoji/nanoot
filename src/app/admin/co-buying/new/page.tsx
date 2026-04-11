@@ -188,6 +188,7 @@ export default function NewCoBuyingPage() {
           creator_id: user?.id,
           description: formData.description,
           host_quantity: formData.hostQuantity,
+          product_link: formData.link,
         })
         .select()
         .single();
@@ -276,6 +277,16 @@ export default function NewCoBuyingPage() {
               placeholder="예) 의성 꿀사과 5kg"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            />
+          </section>
+
+          {/* Product Link */}
+          <section>
+            <label className="block text-sm font-bold text-gray-900 mb-2">상품 링크 (선택)</label>
+            <Input
+              placeholder="예) 쿠팡, 네이버 쇼핑 링크"
+              value={formData.link}
+              onChange={(e) => setFormData({ ...formData, link: e.target.value })}
             />
           </section>
 

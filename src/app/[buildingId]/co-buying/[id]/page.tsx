@@ -132,9 +132,21 @@ export default async function CoBuyingDetail({ params }: { params: Promise<{ bui
           </span>
         </div>
 
-        <div className="text-[15px] text-gray-700 leading-relaxed whitespace-pre-wrap">
+        <div className="text-[15px] text-gray-700 leading-relaxed whitespace-pre-wrap mb-6">
           {detail.description || '반가워요! 이번 공동구매에 대해 소개해 드릴게요.'}
         </div>
+
+        {detail.product_link && (
+          <a 
+            href={detail.product_link} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full h-12 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold text-[14px] hover:bg-gray-50 transition-colors mb-2"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
+            상품 보러가기
+          </a>
+        )}
       </div>
 
       {/* ---------- 5. 모집 현황 게이지 ---------- */}

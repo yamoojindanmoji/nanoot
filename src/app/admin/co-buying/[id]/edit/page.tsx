@@ -72,7 +72,7 @@ export default function EditCoBuyingPage({ params }: { params: Promise<{ id: str
       buildingId: cb.building_id,
       category: cb.category || CATEGORIES[0].value,
       title: cb.title,
-      link: '', // Not stored in DB yet
+      link: cb.product_link || '',
       image: null,
       previewUrl: cb.image_url || '',
       price: cb.total_price,
@@ -158,6 +158,7 @@ export default function EditCoBuyingPage({ params }: { params: Promise<{ id: str
           building_id: formData.buildingId,
           image_url: imageUrl,
           host_quantity: formData.hostQuantity,
+          product_link: formData.link,
         })
         .eq('id', id);
 
@@ -248,6 +249,15 @@ export default function EditCoBuyingPage({ params }: { params: Promise<{ id: str
           <section>
             <label className="block text-sm font-bold text-gray-900 mb-2">상품명</label>
             <Input value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} />
+          </section>
+
+          <section>
+            <label className="block text-sm font-bold text-gray-900 mb-2">상품 링크 (선택)</label>
+            <Input 
+              placeholder="예) 쿠팡, 네이버 쇼핑 링크"
+              value={formData.link} 
+              onChange={(e) => setFormData({ ...formData, link: e.target.value })} 
+            />
           </section>
 
           <section>
