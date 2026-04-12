@@ -225,6 +225,7 @@ function BuildingSetupContent() {
 
         if (findError || !building) {
           console.warn('Invalid invite code:', inviteCode);
+          setIsAutoSelecting(false);
           router.replace('/building/setup');
           return;
         }
@@ -232,6 +233,7 @@ function BuildingSetupContent() {
         // 2. 현재 사용자 정보 가져오기
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
+          setIsAutoSelecting(false);
           router.replace('/');
           return;
         }
@@ -244,14 +246,17 @@ function BuildingSetupContent() {
 
         if (updateError) {
           console.error('Error updating user building:', updateError);
+          setIsAutoSelecting(false);
           router.replace('/building/setup');
           return;
         }
 
         // 4. 홈으로 이동
+        setIsAutoSelecting(false);
         router.replace('/');
       } catch (error) {
         console.error('Auto selection failed:', error);
+        setIsAutoSelecting(false);
         router.replace('/building/setup');
       }
     };
