@@ -57,12 +57,15 @@ export default function SetupProfilePage() {
 
       // Update user profile
       const { error: updateError } = await supabase
-        .from('users')
-        .update({
-          nickname: nickname.trim(),
-          ...(profileImageUrl ? { profile_image_url: profileImageUrl } : {}),
-        })
-        .eq('id', user.id);
+  .from('users')
+  .upsert({
+    id: user.id,
+    email: user.email,
+    nickname: nickname.trim(),
+    role: 'USER',
+    building_id: null,
+    ...(profileImageUrl ? { profile_image_url: profileImageUrl } : {}),
+  }, { onConflict: 'id' });
 
       if (updateError) throw updateError;
 
