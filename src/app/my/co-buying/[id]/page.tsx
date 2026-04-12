@@ -119,10 +119,12 @@ function DetailPageContent({ params: paramsPromise, searchParams: searchParamsPr
   }
 
   const isCreator = detailData.creator_id === user.id && from !== 'participated';
-  const joinerTotalQuantity = allJoiners.reduce((sum, j) => sum + j.joiner_total_quantity, 0);
-  const hostQuantity = detailData.host_quantity || 0;
-  const currentTotalQuantity = joinerTotalQuantity + hostQuantity;
-  const remainingQuantity = Math.max(0, detailData.total_quantity - currentTotalQuantity);
+  const joinerTotalQuantity = allJoiners
+  .filter((j) => j.user_id !== user.id)
+  .reduce((sum, j) => sum + j.joiner_total_quantity, 0);
+const hostQuantity = detailData.host_quantity || 0;
+const currentTotalQuantity = joinerTotalQuantity + hostQuantity;
+const remainingQuantity = Math.max(0, detailData.total_quantity - currentTotalQuantity);
 
   const coBuyingInfo = {
     id: detailData.id,
