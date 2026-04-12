@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { CoBuyingTimeline } from '@/components/common/CoBuyingTimeline';
 
 interface DetailOption {
-  id: string; // joiner_product_details.id (or joinerId if fallback)
+  id: string;
   optionId: string;
   name: string;
   price: number;
@@ -27,6 +27,7 @@ interface ParticipatedDetailClientProps {
     deadline: string;
     buildingId: string;
     remainingQuantity: number;
+    minQuantity: number;
   };
 }
 
@@ -35,27 +36,24 @@ export function ParticipatedDetailClient({ initialDetails, joinerId, coBuyingInf
   const [isUpdating, setIsUpdating] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
 
-  // Edit sheet state
   const [editOpen, setEditOpen] = useState(false);
   const [editDetails, setEditDetails] = useState<DetailOption[]>(initialDetails.map(d => ({ ...d })));
 
-  // Cancel dialog state
   const [cancelOpen, setCancelOpen] = useState(false);
 
   const supabase = createClient();
 
   const isRecruiting = coBuyingInfo.status === 'RECRUITING';
+  const minQty = coBuyingInfo.minQuantity || 1;
 
-  // Read-only totals from initialDetails
   const totalCount = initialDetails.reduce((sum, d) => sum + d.quantity, 0);
   const totalPay = initialDetails.reduce((sum, d) => sum + d.quantity * d.price, 0);
 
-  // Edit sheet totals
   const editTotalCount = editDetails.reduce((sum, d) => sum + d.quantity, 0);
   const editTotalPay = editDetails.reduce((sum, d) => sum + d.quantity * d.price, 0);
 
   const handleEditMinus = (id: string) => {
-    setEditDetails(prev => prev.map(d => d.id === id ? { ...d, quantity: Math.max(1, d.quantity - 1) } : d));
+    setEditDetails(prev => prev.map(d => d.id === id ? { ...d, quantity: Math.max(minQty, d.quantity - 1) } : d));
   };
 
   const handleEditPlus = (id: string) => {
@@ -66,13 +64,12 @@ export function ParticipatedDetailClient({ initialDetails, joinerId, coBuyingInf
     setIsUpdating(true);
     try {
       for (const d of editDetails) {
-        if (!d.optionId) continue; // skip fallback rows
+        if (!d.optionId) continue;
         await supabase
           .from('joiner_product_details')
           .update({ joiner_quantity: d.quantity })
           .eq('id', d.id);
       }
-      // Also update joiner totals
       const newTotalQty = editDetails.reduce((sum, d) => sum + d.quantity, 0);
       const newTotalPay = editDetails.reduce((sum, d) => sum + d.quantity * d.price, 0);
       await supabase
@@ -94,9 +91,7 @@ export function ParticipatedDetailClient({ initialDetails, joinerId, coBuyingInf
   const handleCancel = async () => {
     setIsCancelling(true);
     try {
-      // Delete joiner_product_details first (FK)
       await supabase.from('joiner_product_details').delete().eq('joiner_id', joinerId);
-      // Delete joiner
       const { error } = await supabase.from('joiners').delete().eq('id', joinerId);
       if (error) throw error;
 
@@ -113,7 +108,6 @@ export function ParticipatedDetailClient({ initialDetails, joinerId, coBuyingInf
 
   return (
     <>
-      {/* Timeline Section */}
       <div className="bg-white px-5 py-5 border-b border-gray-100">
         <h3 className="font-bold text-gray-900 mb-2 text-[15px]">공구 진행 상황</h3>
         <div className="px-1">
@@ -121,7 +115,6 @@ export function ParticipatedDetailClient({ initialDetails, joinerId, coBuyingInf
         </div>
       </div>
 
-      {/* Order Detail — Read-only */}
       <div className="mt-2 bg-white p-5 border-b border-gray-100 flex-1">
         <h3 className="font-bold text-gray-900 mb-4 text-[15px]">참여 신청 상세 내역</h3>
 
@@ -149,7 +142,6 @@ export function ParticipatedDetailClient({ initialDetails, joinerId, coBuyingInf
         </div>
       </div>
 
-      {/* Bottom CTA */}
       <div 
         style={{ bottom: 'var(--gnb-total-height)' }}
         className="fixed left-1/2 -translate-x-1/2 w-full max-w-[440px] bg-white border-t border-gray-100 p-4 z-30 flex gap-2"
@@ -183,7 +175,6 @@ export function ParticipatedDetailClient({ initialDetails, joinerId, coBuyingInf
         )}
       </div>
 
-      {/* ── Edit Bottom Sheet ── */}
       {editOpen && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={() => setEditOpen(false)}>
           <div
@@ -200,7 +191,7 @@ export function ParticipatedDetailClient({ initialDetails, joinerId, coBuyingInf
                     <button
                       onClick={() => handleEditMinus(opt.id)}
                       className="flex-1 h-full flex items-center justify-center text-gray-500 hover:bg-gray-200"
-                      disabled={isUpdating || opt.quantity <= 1}
+                      disabled={isUpdating || opt.quantity <= minQty}
                     >-</button>
                     <span className="w-8 text-center text-[14px] font-bold text-gray-900">{opt.quantity}</span>
                     <button
@@ -229,7 +220,6 @@ export function ParticipatedDetailClient({ initialDetails, joinerId, coBuyingInf
         </div>
       )}
 
-      {/* ── Cancel Confirmation Dialog ── */}
       {cancelOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6" onClick={() => setCancelOpen(false)}>
           <div
