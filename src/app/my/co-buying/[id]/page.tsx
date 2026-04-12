@@ -139,7 +139,7 @@ const remainingQuantity = Math.max(0, detailData.total_quantity - currentTotalQu
     deadline: detailData.deadline,
     category: detailData.category,
     thumbnailUrl: detailData.image_url || 'https://images.unsplash.com/photo-1590481845199-3543ebce321f?q=80&w=2670&auto=format&fit=crop',
-    buildingId: detailData.building_id
+    buildingId: detailData.building_id,
     openChatLink: 'https://open.kakao.com/o/gWfJaCfi',
   };
 
