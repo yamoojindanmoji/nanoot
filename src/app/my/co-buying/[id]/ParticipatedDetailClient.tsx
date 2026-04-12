@@ -28,6 +28,7 @@ interface ParticipatedDetailClientProps {
     buildingId: string;
     remainingQuantity: number;
     minQuantity: number;
+    openChatLink: string;
   };
 }
 
@@ -163,8 +164,12 @@ export function ParticipatedDetailClient({ initialDetails, joinerId, coBuyingInf
             </Button>
           </>
         ) : coBuyingInfo.status === 'PAYMENT_WAITING' ? (
-          <Button className="w-full h-[52px] !bg-yellow-400 !text-yellow-900 hover:!bg-yellow-500 rounded-xl font-bold">
-            입금하기 (오픈채팅 이동)
+          <Button 
+  className="w-full h-[52px] !bg-yellow-400 !text-yellow-900 hover:!bg-yellow-500 rounded-xl font-bold"
+  onClick={() => window.open(coBuyingInfo.openChatLink || 'https://open.kakao.com/o/gWfJaCfi', '_blank')}
+>
+  입금하기 (오픈채팅 이동)
+</Button>
           </Button>
         ) : coBuyingInfo.status === 'ORDER_IN_PROGRESS' ? (
           <Button className="w-full h-[52px] rounded-xl font-bold" disabled>주문 진행 중</Button>
