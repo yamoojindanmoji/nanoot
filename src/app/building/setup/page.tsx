@@ -225,7 +225,7 @@ function BuildingSetupContent() {
 
         if (findError || !building) {
           console.warn('Invalid invite code:', inviteCode);
-          setIsAutoSelecting(false);
+          router.replace('/building/setup');
           return;
         }
 
@@ -244,7 +244,7 @@ function BuildingSetupContent() {
 
         if (updateError) {
           console.error('Error updating user building:', updateError);
-          setIsAutoSelecting(false);
+          router.replace('/building/setup');
           return;
         }
 
@@ -252,7 +252,7 @@ function BuildingSetupContent() {
         router.replace('/');
       } catch (error) {
         console.error('Auto selection failed:', error);
-        setIsAutoSelecting(false);
+        router.replace('/building/setup');
       }
     };
 
