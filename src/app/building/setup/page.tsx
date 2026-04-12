@@ -31,7 +31,6 @@ function CodeEntryView({ buildingId }: { buildingId: string }) {
     setIsLoading(true);
     setError(null);
 
-    // invite_code 일치 여부 확인
     const { data: match } = await supabase
       .from('buildings')
       .select('id')
@@ -39,20 +38,24 @@ function CodeEntryView({ buildingId }: { buildingId: string }) {
       .eq('invite_code', inviteCode.trim())
       .single();
 
+    console.log('match:', match);
+
     if (!match) {
       setError('초대 코드가 일치하지 않습니다.');
       setIsLoading(false);
       return;
     }
 
-    // users.building_id 업데이트
     const { data: { user } } = await supabase.auth.getUser();
+    console.log('user:', user);
     if (!user) { router.replace('/'); return; }
 
     const { error: updateError } = await supabase
       .from('users')
       .update({ building_id: buildingId })
       .eq('id', user.id);
+
+    console.log('updateError:', updateError);
 
     if (updateError) {
       setError('건물 등록 중 오류가 발생했습니다.');
