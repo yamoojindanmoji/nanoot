@@ -16,6 +16,7 @@ export interface ParticipatedCoBuyingCardProps {
   remainingQuantity?: number;
   quantityLabel?: string;
   payDeadline?: string;
+  pickupLocation?: string;
   from?: 'participated' | 'hosted';
 }
 
@@ -73,9 +74,12 @@ export function ParticipatedCoBuyingCard({
   const detailHref = from ? `/my/co-buying/${id}?from=${from}` : `/my/co-buying/${id}`;
   
   // Custom description for RECRUITING if remainingQuantity provided
-  const description = (status === 'RECRUITING' && remainingQuantity !== undefined)
+  const description = 
+  (status === 'RECRUITING' && remainingQuantity !== undefined)
     ? `다른 신청자들을 모집하고 있어요. 모집 완료까지 ${remainingQuantity}개 남았어요!`
-    : config.description;
+    : (status === 'READY_FOR_PICKUP' && pickupLocation)
+      ? `📦 수령 장소 및 일정: ${pickupLocation}`
+      : config.description;
 
   // 입금 마감 텍스트 계산
   const getPayDeadlineText = () => {

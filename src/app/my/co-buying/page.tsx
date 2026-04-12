@@ -46,7 +46,9 @@ function MyCoBuyingPageContent() {
               total_quantity,
               deadline,
               pay_deadline,
-              image_url
+              pickup_location,
+              image_url,
+              pickup_location
             )
           `)
           .eq('user_id', user.id)
@@ -73,6 +75,7 @@ function MyCoBuyingPageContent() {
               myTotalPay: p.joiner_total_pay,
               remainingQuantity: remaining,
               quantityLabel: '신청',
+              pickupLocation: cb.pickup_location || '',
               thumbnailUrl: cb.image_url || 'https://images.unsplash.com/photo-1590481845199-3543ebce321f?q=80&w=2670&auto=format&fit=crop',
             };
           }));
@@ -215,6 +218,7 @@ function MyCoBuyingPageContent() {
                     remainingQuantity={item.remainingQuantity}
                     quantityLabel={item.quantityLabel}
                     payDeadline={item.payDeadline}
+                    pickupLocation={item.pickupLocation}
                     from={tab === 'participated' ? 'participated' : 'hosted'}
                   />
                 ))}
