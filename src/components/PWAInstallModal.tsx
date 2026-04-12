@@ -39,8 +39,8 @@ export function PWAInstallModal({ isOpen, onClose }: PWAInstallModalProps) {
             <div className="flex items-start gap-3">
               <div className="w-6 h-6 rounded-full bg-white shadow-sm flex items-center justify-center flex-shrink-0 text-xs font-bold text-blue-500">1</div>
               <p className="text-gray-600 text-[14px] leading-relaxed">
-                하단 가운데 공유 버튼(<Share size={14} className="inline mb-1" /> 또는 <MoreVertical size={14} className="inline mb-1" />)을 누릅니다.
-              </p>
+  먼저 <span className="font-bold text-gray-900">사파리(Safari)</span>로 열어주세요. 그 다음 하단 가운데 공유 버튼(<Share size={14} className="inline mb-1" />)을 누릅니다.
+</p>
             </div>
             <div className="flex items-start gap-3">
               <div className="w-6 h-6 rounded-full bg-white shadow-sm flex items-center justify-center flex-shrink-0 text-xs font-bold text-blue-500">2</div>
