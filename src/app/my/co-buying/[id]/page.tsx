@@ -95,7 +95,6 @@ function DetailPageContent({ params: paramsPromise, searchParams: searchParamsPr
       
       setUserJoiner(uJoiner);
 
-      // Fetch host profile if needed for hosted view
       if (cb.creator_id === currentUser.id) {
         const { data: hProfile } = await supabase
           .from('users')
@@ -204,7 +203,7 @@ function DetailPageContent({ params: paramsPromise, searchParams: searchParamsPr
         name: detail.product_options?.name ?? '기본 상품',
         price: detail.product_options?.price ?? basePricePerItem,
         quantity: detail.joiner_quantity,
-        maxAvailable: detail.joiner_quantity + (detail.product_options?.remain_quantity ?? remainingQuantity),
+        maxAvailable: remainingQuantity,
       }))
     : [{
         id: userJoiner.id,
@@ -212,7 +211,7 @@ function DetailPageContent({ params: paramsPromise, searchParams: searchParamsPr
         name: '기본 상품',
         price: basePricePerItem,
         quantity: userJoiner.joiner_total_quantity,
-        maxAvailable: userJoiner.joiner_total_quantity + remainingQuantity,
+        maxAvailable: remainingQuantity,
       }];
 
   return (
