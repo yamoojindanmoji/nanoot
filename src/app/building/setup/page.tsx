@@ -60,7 +60,7 @@ function CodeEntryView({ buildingId }: { buildingId: string }) {
       return;
     }
 
-    router.replace('/');
+    window.location.href = '/';
   };
 
   return (
@@ -253,7 +253,7 @@ function BuildingSetupContent() {
 
         // 4. 홈으로 이동
         setIsAutoSelecting(false);
-        router.replace('/');
+        window.location.href = '/';
       } catch (error) {
         console.error('Auto selection failed:', error);
         setIsAutoSelecting(false);
