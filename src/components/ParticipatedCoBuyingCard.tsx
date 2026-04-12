@@ -69,6 +69,7 @@ export function ParticipatedCoBuyingCard({
   quantityLabel = '신청',
   payDeadline,
   from,
+  pickupLocation,
 }: ParticipatedCoBuyingCardProps) {
   const config = statusConfig[status] || { label: status, description: '', colorClass: 'bg-gray-100 text-gray-700' };
   const detailHref = from ? `/my/co-buying/${id}?from=${from}` : `/my/co-buying/${id}`;
