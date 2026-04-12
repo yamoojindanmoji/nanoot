@@ -4,6 +4,9 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { Toast } from '@/components/ui/Toast';
+import { Input } from '@/components/ui/Input';
+import { createClient } from '@/lib/supabase/client';
+import { Pencil } from 'lucide-react';
 
 export function UserProfileClient({ 
   initialProfile, 
@@ -13,7 +16,42 @@ export function UserProfileClient({
   isBuildingVerified: boolean 
 }) {
   const [showVerifyPopup, setShowVerifyPopup] = useState(!isBuildingVerified);
+  const [isEditingNickname, setIsEditingNickname] = useState(false);
+  const [nickname, setNickname] = useState(initialProfile.nickname);
+  const [editNicknameValue, setEditNicknameValue] = useState(initialProfile.nickname);
+  const [isLoading, setIsLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  
+  const supabase = createClient();
+
+  const handleUpdateNickname = async () => {
+    if (!editNicknameValue.trim()) {
+      setToastMessage('닉네임을 입력해주세요.');
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
+
+      const { error } = await supabase
+        .from('users')
+        .update({ nickname: editNicknameValue.trim() })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      setNickname(editNicknameValue.trim());
+      setIsEditingNickname(false);
+      setToastMessage('닉네임이 변경되었습니다.');
+    } catch (error) {
+      console.error('Error updating nickname:', error);
+      setToastMessage('닉네임 변경에 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <>
@@ -34,8 +72,15 @@ export function UserProfileClient({
           </div>
         </div>
         <div className="flex flex-col">
-          <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-xl font-bold text-gray-900">{initialProfile.nickname}</h2>
+          <div 
+            onClick={() => {
+              setEditNicknameValue(nickname);
+              setIsEditingNickname(true);
+            }}
+            className="flex items-center gap-1.5 mb-1 cursor-pointer group"
+          >
+            <h2 className="text-xl font-bold text-gray-900 group-hover:text-gray-600 transition-colors">{nickname}</h2>
+            <Pencil size={14} className="text-gray-300 group-hover:text-gray-500 transition-colors" />
           </div>
           
           {isBuildingVerified ? (
@@ -53,6 +98,49 @@ export function UserProfileClient({
           )}
         </div>
       </div>
+
+      {/* 닉네임 수정 모달 */}
+      {isEditingNickname && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white max-w-sm w-full rounded-2xl p-6 shadow-xl flex flex-col gap-4">
+             <div className="flex flex-col gap-1 text-center">
+               <h3 className="text-lg font-bold text-gray-900">닉네임 수정</h3>
+               <p className="text-[13px] text-emerald-600 font-medium leading-relaxed">
+                 닉네임을 카카오톡 오픈채팅방 이름<br />
+                 <span className="font-bold">(닉네임/층 수)</span>로 변경해주세요!
+               </p>
+             </div>
+             
+             <div className="py-2">
+               <Input 
+                 value={editNicknameValue}
+                 onChange={(e) => setEditNicknameValue(e.target.value)}
+                 placeholder="닉네임 입력 (예: 홍길동/12층)"
+                 className="text-center h-12 text-base"
+                 autoFocus
+               />
+             </div>
+
+             <div className="flex gap-2">
+               <Button 
+                 variant="secondary" 
+                 className="flex-1 rounded-xl h-12" 
+                 onClick={() => setIsEditingNickname(false)}
+                 disabled={isLoading}
+               >
+                 취소
+               </Button>
+               <Button 
+                 className="flex-1 rounded-xl h-12" 
+                 onClick={handleUpdateNickname}
+                 isLoading={isLoading}
+               >
+                 저장하기
+               </Button>
+             </div>
+          </div>
+        </div>
+      )}
 
       {showVerifyPopup && !isBuildingVerified && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -77,3 +165,4 @@ export function UserProfileClient({
     </>
   );
 }
+
