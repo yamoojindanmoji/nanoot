@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/server'
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
+  const invite = searchParams.get('invite')
+  const queryString = invite ? `?invite=${invite}` : ''
 
   if (code) {
     const supabase = await createClient()
@@ -37,12 +39,12 @@ export async function GET(request: Request) {
             { onConflict: 'id', ignoreDuplicates: true }
           );
 
-          return NextResponse.redirect(`${origin}/auth/setup-profile`);
+          return NextResponse.redirect(`${origin}/auth/setup-profile${queryString}`);
         }
 
         // nickname 없음 → 프로필 설정 필요
         if (!profile.nickname) {
-          return NextResponse.redirect(`${origin}/auth/setup-profile`);
+          return NextResponse.redirect(`${origin}/auth/setup-profile${queryString}`);
         }
 
         // Existing user with nickname → redirect based on building_id
@@ -50,10 +52,10 @@ export async function GET(request: Request) {
         const isLocalEnv = process.env.NODE_ENV === 'development';
         const baseUrl = isLocalEnv ? origin : forwardedHost ? `https://${forwardedHost}` : origin;
 
-        if (!profile.building_id) {
-          return NextResponse.redirect(`${baseUrl}/building/setup`);
+        if (!profile.building_id || invite) {
+          return NextResponse.redirect(`${baseUrl}/building/setup${queryString}`);
         }
-        return NextResponse.redirect(`${baseUrl}/`);
+        return NextResponse.redirect(`${baseUrl}/${queryString}`);
       }
     }
   }

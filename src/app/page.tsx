@@ -55,8 +55,11 @@ export default function Home() {
 
     bId = profile?.building_id || null;
 
-    if (!bId) {
-      // Logged-in but no building → send to building setup
+    const params = new URLSearchParams(window.location.search);
+    const invite = params.get('invite');
+
+    if (!bId || invite) {
+      // Logged-in but no building OR has an invite link → send to building setup
       router.replace(`/building/setup${window.location.search}`);
       setIsLoading(false);
       return;

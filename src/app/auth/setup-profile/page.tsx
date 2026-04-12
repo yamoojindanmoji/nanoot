@@ -73,10 +73,11 @@ export default function SetupProfilePage() {
         .eq('id', user.id)
         .single();
 
+      const queryString = window.location.search;
       if (profile?.building_id) {
-        router.replace('/');
+        router.replace(`/${queryString}`);
       } else {
-        router.replace('/building/setup');
+        router.replace(`/building/setup${queryString}`);
       }
     } catch (error) {
       console.error('Error setting up profile:', error);

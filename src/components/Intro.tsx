@@ -4,10 +4,11 @@ import { createClient } from '@/lib/supabase/client';
 export function Intro() {
   const handleKakaoLogin = async () => {
     const supabase = createClient();
+    const currentParams = window.location.search;
     await supabase.auth.signInWithOAuth({
       provider: 'kakao',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback${currentParams}`,
       },
     });
   };
