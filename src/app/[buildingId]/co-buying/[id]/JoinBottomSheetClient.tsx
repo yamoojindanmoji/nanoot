@@ -24,6 +24,7 @@ interface JoinBottomSheetClientProps {
   currentQuantity: number;
   remainingQuantity: number;
   status: string;
+  isJoined?: boolean;
 }
 
 export function JoinBottomSheetClient({ 
@@ -34,7 +35,8 @@ export function JoinBottomSheetClient({
   totalQuantity, 
   currentQuantity, 
   remainingQuantity,
-  status
+  status,
+  isJoined = false
 }: JoinBottomSheetClientProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -56,6 +58,11 @@ export function JoinBottomSheetClient({
   }, [supabase]);
 
   const handleOpen = async () => {
+    if (isJoined) {
+      alert("이미 신청된 공구입니다. '내 공구'에서 신청 내역을 확인하세요.");
+      return;
+    }
+
     if (remainingQuantity === 0) {
       alert('현재 모집 수량이 가득 찼어요. 공구 모집이 마감되었습니다');
       return;
@@ -283,9 +290,9 @@ export function JoinBottomSheetClient({
         >
           <Button
             onClick={handleOpen}
-            className="w-full h-[52px] !bg-black !text-white hover:!bg-gray-800 rounded-xl font-bold text-[16px] flex items-center justify-center transition-all shadow-md active:scale-95"
+            className={`w-full h-[52px] ${isJoined ? '!bg-gray-200 !text-gray-500' : '!bg-black !text-white hover:!bg-gray-800'} rounded-xl font-bold text-[16px] flex items-center justify-center transition-all shadow-md active:scale-95`}
           >
-            공구 신청하기
+            {isJoined ? '이미 신청된 공구입니다' : '공구 신청하기'}
           </Button>
         </div>
       )}

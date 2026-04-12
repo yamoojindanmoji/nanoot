@@ -50,6 +50,19 @@ export default async function CoBuyingDetail({ params }: { params: Promise<{ bui
     .select('*')
     .eq('co_buying_id', id);
 
+  // 현재 유저의 참여 여부 확인
+  const { data: { user } } = await supabase.auth.getUser();
+  let isJoined = false;
+  if (user) {
+    const { data: joinerData } = await supabase
+      .from('joiners')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('co_buying_id', id)
+      .maybeSingle();
+    isJoined = !!joinerData;
+  }
+
   // Calculate progress (Fix NaN% bug by checking total_quantity)
   const progressPercent = detail.total_quantity > 0 
     ? Math.min(100, Math.floor((detail.currentQuantity / detail.total_quantity) * 100))
@@ -204,6 +217,7 @@ export default async function CoBuyingDetail({ params }: { params: Promise<{ bui
         currentQuantity={detail.currentQuantity || 0}
         remainingQuantity={remainingQuantity}
         status={detail.status}
+        isJoined={isJoined}
       />
     </div>
   );
