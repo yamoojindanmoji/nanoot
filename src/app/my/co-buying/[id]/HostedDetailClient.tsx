@@ -165,7 +165,7 @@ console.log('update result:', data, error);
       const { error } = await supabase.from('notifications').insert({
         user_id: joinerId,
         title: `${coBuyingInfo.title} 입금안내`,
-        content: '오픈채팅방에서 입금을 완료해주세요!',
+        body: '오픈채팅방에서 입금을 완료해주세요!',
         is_read: false
       });
       if (error) throw error;
@@ -187,7 +187,7 @@ console.log('update result:', data, error);
       const notifications = unpaidJoiners.map(j => ({
         user_id: j.userId,
         title: `${coBuyingInfo.title} 입금안내`,
-        content: '오픈채팅방에서 입금을 완료해주세요!',
+        body: '오픈채팅방에서 입금을 완료해주세요!',
         is_read: false
       }));
 
