@@ -30,6 +30,7 @@ interface ParticipatedDetailClientProps {
     minQuantity: number;
     openChatLink: string;
     hostNickname: string;
+    pickupLocation: string;
   };
 }
 
@@ -120,6 +121,12 @@ export function ParticipatedDetailClient({ initialDetails, joinerId, coBuyingInf
   <h3 className="font-bold text-gray-900 mb-2 text-[15px]">주최자 정보</h3>
   <p className="text-[14px] text-gray-600">{coBuyingInfo.hostNickname}</p>
 </div>
+{coBuyingInfo.status === 'READY_FOR_PICKUP' && coBuyingInfo.pickupLocation && (
+  <div className="mt-2 bg-white p-5 border-b border-gray-100">
+    <h3 className="font-bold text-gray-900 mb-2 text-[15px]">수령 장소 및 일정 📦</h3>
+    <p className="text-[14px] text-gray-600">{coBuyingInfo.pickupLocation}</p>
+  </div>
+)}
       <div className="mt-2 bg-white p-5 border-b border-gray-100 flex-1">
         <h3 className="font-bold text-gray-900 mb-4 text-[15px]">참여 신청 상세 내역</h3>
 
