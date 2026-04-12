@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { Toast } from '@/components/ui/Toast';
 import { Input } from '@/components/ui/Input';
 import { createClient } from '@/lib/supabase/client';
-import { Pencil } from 'lucide-react';
+import { Pencil, Camera, Loader2 } from 'lucide-react';
 
 export function UserProfileClient({ 
   initialProfile, 
@@ -19,10 +19,18 @@ export function UserProfileClient({
   const [isEditingNickname, setIsEditingNickname] = useState(false);
   const [nickname, setNickname] = useState(initialProfile.nickname);
   const [editNicknameValue, setEditNicknameValue] = useState(initialProfile.nickname);
+  const [profileImageUrl, setProfileImageUrl] = useState(initialProfile.profileImageUrl);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
+
+  const handleNicknameClick = () => {
+    setEditNicknameValue(nickname);
+    setIsEditingNickname(true);
+  };
 
   const handleUpdateNickname = async () => {
     if (!editNicknameValue.trim()) {
@@ -53,30 +61,111 @@ export function UserProfileClient({
     }
   };
 
+  const handleImageClick = () => {
+    if (isUploadingImage) return;
+    fileInputRef.current?.click();
+  };
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file size (optional, e.g., 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setToastMessage('이미지 크기는 5MB 이하여야 합니다.');
+      return;
+    }
+
+    setIsUploadingImage(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
+
+      // 1. Upload to Supabase Storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('profile-images')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      // 2. Get Public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('profile-images')
+        .getPublicUrl(fileName);
+
+      // 3. Update Database
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ profile_image_url: publicUrl })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      // 4. Update UI
+      setProfileImageUrl(publicUrl);
+      setToastMessage('프로필 이미지가 성공적으로 변경되었습니다.');
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      setToastMessage('이미지 업로드에 실패했습니다.');
+    } finally {
+      setIsUploadingImage(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   return (
     <>
       <div className="flex items-center gap-4">
+        {/* Profile Image Container */}
         <div 
-          onClick={() => setToastMessage('프로필 이미지 변경 기능은 준비 중입니다.')}
+          onClick={handleImageClick}
           className="w-16 h-16 rounded-full bg-gray-200 overflow-hidden flex-shrink-0 relative group cursor-pointer border border-gray-100"
         >
-          {initialProfile.profileImageUrl ? (
-            <Image src={initialProfile.profileImageUrl} alt="profile" width={64} height={64} className="w-full h-full object-cover" />
+          {profileImageUrl ? (
+            <Image 
+              src={profileImageUrl} 
+              alt="profile" 
+              width={64} 
+              height={64} 
+              className={`w-full h-full object-cover transition-opacity ${isUploadingImage ? 'opacity-40' : 'opacity-100'}`} 
+            />
           ) : (
-            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <div className={`w-full h-full bg-gray-200 flex items-center justify-center ${isUploadingImage ? 'opacity-40' : 'opacity-100'}`}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
             </div>
           )}
+          
+          {/* Overlay for hover */}
           <div className="absolute inset-0 bg-black/40 hidden group-hover:flex items-center justify-center transition-all">
-             <span className="text-white text-xs font-bold">변경</span>
+             <Camera size={20} className="text-white opacity-80" />
           </div>
+
+          {/* Loader Overlay */}
+          {isUploadingImage && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+              <Loader2 className="w-6 h-6 text-[#84CC16] animate-spin" />
+            </div>
+          )}
+
+          {/* Hidden File Input */}
+          <input 
+            type="file" 
+            ref={fileInputRef}
+            onChange={handleImageChange}
+            accept="image/*"
+            className="hidden"
+          />
         </div>
+
         <div className="flex flex-col">
           <div 
-            onClick={() => {
-              setEditNicknameValue(nickname);
-              setIsEditingNickname(true);
-            }}
+            onClick={handleNicknameClick}
             className="flex items-center gap-1.5 mb-1 cursor-pointer group"
           >
             <h2 className="text-xl font-bold text-gray-900 group-hover:text-gray-600 transition-colors">{nickname}</h2>
