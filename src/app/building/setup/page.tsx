@@ -253,9 +253,10 @@ function BuildingSetupContent() {
           return;
         }
 
-        // 4. 홈으로 이동
-        setIsAutoSelecting(false);
-        window.location.href = '/';
+        // 4. 홈으로 이동 (DB 반영 대기)
+await new Promise(resolve => setTimeout(resolve, 1000));
+setIsAutoSelecting(false);
+window.location.href = '/';
       } catch (error) {
         console.error('Auto selection failed:', error);
         setIsAutoSelecting(false);
