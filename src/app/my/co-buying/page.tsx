@@ -94,6 +94,7 @@ function MyCoBuyingPageContent() {
             total_price,
             total_quantity,
             host_quantity,
+            pickup_location,
             deadline,
             pay_deadline,
             image_url
@@ -123,6 +124,7 @@ function MyCoBuyingPageContent() {
               myTotalPay: cb.total_quantity > 0 ? Math.floor(cb.total_price / cb.total_quantity) : 0,
               remainingQuantity: remaining,
               quantityLabel: '모집',
+              pickupLocation: cb.pickup_location || '',
               thumbnailUrl: cb.image_url || 'https://images.unsplash.com/photo-1590481845199-3543ebce321f?q=80&w=2670&auto=format&fit=crop',
             };
           }));
