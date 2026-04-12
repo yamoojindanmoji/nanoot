@@ -114,14 +114,17 @@ export function HostedDetailClient({ coBuyingInfo, joinersList: initialJoinersLi
 
       const newHostQuantity = coBuyingInfo.hostQuantity + coBuyingInfo.remainingQuantity;
 
-const { error } = await supabase
+const { data, error } = await supabase
   .from('co_buyings')
   .update({ 
     status: 'PAYMENT_WAITING',
     pay_deadline: payDeadline.toISOString(),
     host_quantity: newHostQuantity
   })
-  .eq('id', coBuyingInfo.id);
+  .eq('id', coBuyingInfo.id)
+  .select();
+
+console.log('update result:', data, error);
       
       if (error) {
         console.error('Manual/Auto close error from Supabase:', error);
