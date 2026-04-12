@@ -29,6 +29,7 @@ interface ParticipatedDetailClientProps {
     remainingQuantity: number;
     minQuantity: number;
     openChatLink: string;
+    hostNickname: string;
   };
 }
 
@@ -115,7 +116,10 @@ export function ParticipatedDetailClient({ initialDetails, joinerId, coBuyingInf
           <CoBuyingTimeline status={coBuyingInfo.status} />
         </div>
       </div>
-
+<div className="mt-2 bg-white p-5 border-b border-gray-100">
+  <h3 className="font-bold text-gray-900 mb-2 text-[15px]">주최자 정보</h3>
+  <p className="text-[14px] text-gray-600">{coBuyingInfo.hostNickname}</p>
+</div>
       <div className="mt-2 bg-white p-5 border-b border-gray-100 flex-1">
         <h3 className="font-bold text-gray-900 mb-4 text-[15px]">참여 신청 상세 내역</h3>
 

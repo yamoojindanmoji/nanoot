@@ -95,14 +95,12 @@ function DetailPageContent({ params: paramsPromise, searchParams: searchParamsPr
       
       setUserJoiner(uJoiner);
 
-      if (cb.creator_id === currentUser.id) {
-        const { data: hProfile } = await supabase
-          .from('users')
-          .select('name, nickname, profile_image_url')
-          .eq('id', currentUser.id)
-          .single();
-        setHostProfile(hProfile);
-      }
+      const { data: hProfile } = await supabase
+  .from('users')
+  .select('name, nickname, profile_image_url')
+  .eq('id', cb.creator_id)
+  .single();
+setHostProfile(hProfile);
 
       setIsLoading(false);
     };
@@ -141,6 +139,7 @@ const remainingQuantity = Math.max(0, detailData.total_quantity - currentTotalQu
     thumbnailUrl: detailData.image_url || 'https://images.unsplash.com/photo-1590481845199-3543ebce321f?q=80&w=2670&auto=format&fit=crop',
     buildingId: detailData.building_id,
     openChatLink: 'https://open.kakao.com/o/gWfJaCfi',
+    hostNickname: hostProfile?.nickname || hostProfile?.name || '주최자',
   };
 
   if (isCreator) {
