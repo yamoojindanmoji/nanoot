@@ -371,7 +371,7 @@ export function HostedDetailClient({ coBuyingInfo, joinersList: initialJoinersLi
         {coBuyingInfo.status === 'RECRUITING' ? (
           <Button
             className="w-full h-[52px] rounded-xl font-bold text-[16px] !bg-black hover:!bg-gray-800 !text-white border-none"
-            onClick={handleCloseRecruitment}
+            onClick={() => handleCloseRecruitment()}
             disabled={isUpdating}
           >
             모집종료
