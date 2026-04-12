@@ -90,7 +90,23 @@ export function HostedDetailClient({ coBuyingInfo, joinersList: initialJoinersLi
     minute: '2-digit',
     hour12: true,
   });
-
+const handleMoveToOrder = async () => {
+  if (!confirm('주문을 진행하시겠어요?')) return;
+  setIsUpdating(true);
+  try {
+    const { error } = await supabase
+      .from('co_buyings')
+      .update({ status: 'ORDER_IN_PROGRESS' })
+      .eq('id', coBuyingInfo.id);
+    if (error) throw error;
+    setToastMessage('주문이 시작되었습니다.');
+    setTimeout(() => { window.location.reload(); }, 1000);
+  } catch (error: any) {
+    setToastMessage(`오류가 발생했습니다: ${error.message}`);
+  } finally {
+    setIsUpdating(false);
+  }
+};
   const isPaymentWaiting = coBuyingInfo.status === 'PAYMENT_WAITING';
   const paidCount = joinersList.filter(j => j.payStatus === 'PAID').length;
   const unpaidCount = joinersList.filter(j => j.payStatus === 'UNPAID').length;
@@ -384,12 +400,12 @@ console.log('update result:', data, error);
           </Button>
         ) : isPaymentWaiting ? (
           <Button
-            className="w-full h-[52px] rounded-xl font-bold text-[16px] !bg-black hover:!bg-gray-800 !text-white border-none"
-            onClick={sendAllPaymentNotice}
-            disabled={unpaidCount === 0}
-          >
-            {unpaidCount > 0 ? `미입금자 ${unpaidCount}명에게 입금 안내 보내기` : '모두 입금 완료!'}
-          </Button>
+  className="w-full h-[52px] rounded-xl font-bold text-[16px] !bg-black hover:!bg-gray-800 !text-white border-none"
+  onClick={unpaidCount > 0 ? sendAllPaymentNotice : handleMoveToOrder}
+  disabled={isUpdating}
+>
+  {unpaidCount > 0 ? `미입금자 ${unpaidCount}명에게 입금 안내 보내기` : '주문 진행하기'}
+</Button>
         ) : (
           <Button 
             className="w-full h-[52px] rounded-xl font-bold text-[16px] !bg-black !text-white opacity-50 border-none" 
