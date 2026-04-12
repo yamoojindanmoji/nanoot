@@ -220,12 +220,18 @@ export function JoinBottomSheetClient({
         }
       }
 
-      // 3. 목표 수량 달성 시 상태 자동 변경
+      // 3. 목표 수량 달성 시 상태 자동 변경 및 입금 마감일 설정 (24시간)
       const newTotalQuantity = currentQuantity + totalCount;
       if (newTotalQuantity >= totalQuantity) {
+        const payDeadline = new Date();
+        payDeadline.setHours(payDeadline.getHours() + 24);
+
         await supabase
           .from('co_buyings')
-          .update({ status: 'PAYMENT_WAITING' })
+          .update({ 
+            status: 'PAYMENT_WAITING',
+            pay_deadline: payDeadline.toISOString()
+          })
           .eq('id', coBuyingId);
       }
 

@@ -45,6 +45,7 @@ function MyCoBuyingPageContent() {
               total_price,
               total_quantity,
               deadline,
+              pay_deadline,
               image_url
             )
           `)
@@ -91,6 +92,7 @@ function MyCoBuyingPageContent() {
             total_quantity,
             host_quantity,
             deadline,
+            pay_deadline,
             image_url
           `)
           .eq('creator_id', user.id)
@@ -212,6 +214,7 @@ function MyCoBuyingPageContent() {
                     myTotalPay={item.myTotalPay}
                     remainingQuantity={item.remainingQuantity}
                     quantityLabel={item.quantityLabel}
+                    payDeadline={item.payDeadline}
                     from={tab === 'participated' ? 'participated' : 'hosted'}
                   />
                 ))}

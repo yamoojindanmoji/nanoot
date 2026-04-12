@@ -65,6 +65,7 @@ export function ParticipatedCoBuyingCard({
   myTotalPay,
   remainingQuantity,
   quantityLabel = '신청',
+  payDeadline,
   from,
 }: ParticipatedCoBuyingCardProps) {
   const config = statusConfig[status] || { label: status, description: '', colorClass: 'bg-gray-100 text-gray-700' };
@@ -74,6 +75,27 @@ export function ParticipatedCoBuyingCard({
   const description = (status === 'RECRUITING' && remainingQuantity !== undefined)
     ? `다른 신청자들을 모집하고 있어요. 모집 완료까지 ${remainingQuantity}개 남았어요!`
     : config.description;
+
+  // 입금 마감 텍스트 계산
+  const getPayDeadlineText = () => {
+    if (status !== 'PAYMENT_WAITING' || !payDeadline) return null;
+    
+    const now = new Date();
+    const deadline = new Date(payDeadline);
+    const diffMs = deadline.getTime() - now.getTime();
+    const diffHours = diffMs / (1000 * 60 * 60);
+    
+    if (diffMs < 0) return '입금 마감됨';
+    
+    if (diffHours < 24) {
+      if (now.getDate() === deadline.getDate()) return '입금마감: 오늘';
+      return '입금마감: 내일';
+    }
+    
+    return `입금마감: ${deadline.getMonth() + 1}/${deadline.getDate()}`;
+  };
+
+  const payDeadlineText = getPayDeadlineText();
 
   return (
     <div className="bg-white px-5 py-6 mb-2 flex flex-col group cursor-pointer border-b border-gray-100 last:border-0 relative">
@@ -95,7 +117,9 @@ export function ParticipatedCoBuyingCard({
             <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold w-fit ${config.colorClass}`}>
               {config.label}
             </span>
-            <span className="text-[12px] font-bold text-red-500">입금마감: 오늘</span>
+            {payDeadlineText && (
+              <span className="text-[12px] font-bold text-red-500">{payDeadlineText}</span>
+            )}
           </div>
           <h3 className="font-bold text-[16px] leading-snug text-gray-900 line-clamp-2">
             {title}

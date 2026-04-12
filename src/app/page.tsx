@@ -47,14 +47,31 @@ export default function Home() {
 
     let bId: string | null = null;
 
-    const { data: profile } = await supabase
-      .from('users')
-      .select('building_id')
-      .eq('id', currentUser.id)
-      .single();
+    // --- 사용자 프로필 조회 (재시도 로직 포함) ---
+    let profile = null;
+    let retryCount = 0;
+    const MAX_RETRIES = 2;
+
+    while (retryCount <= MAX_RETRIES) {
+      const { data: profiles } = await supabase
+        .from('users')
+        .select('building_id')
+        .eq('id', currentUser.id);
+      
+      if (profiles && profiles.length > 0) {
+        profile = profiles[0];
+        break;
+      }
+
+      if (retryCount < MAX_RETRIES) {
+        retryCount++;
+        await new Promise(resolve => setTimeout(resolve, 500)); // 0.5초 대기 후 재시도
+      } else {
+        break;
+      }
+    }
 
     bId = profile?.building_id || null;
-
     const params = new URLSearchParams(window.location.search);
     const invite = params.get('invite');
 

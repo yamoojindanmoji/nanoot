@@ -31,9 +31,18 @@ export default function AdminClient({ coBuyings: initial }: { coBuyings: any[] }
   const handleStatusChange = async (id: string, newStatus: string) => {
     setLoadingId(id);
 
+    const updateData: any = { status: newStatus };
+    
+    // 결제 대기로 변경 시 입금 마감일 설정 (24시간)
+    if (newStatus === 'PAYMENT_WAITING') {
+      const payDeadline = new Date();
+      payDeadline.setHours(payDeadline.getHours() + 24);
+      updateData.pay_deadline = payDeadline.toISOString();
+    }
+
     const { error } = await supabase
       .from('co_buyings')
-      .update({ status: newStatus })
+      .update(updateData)
       .eq('id', id);
 
     if (!error) {

@@ -97,7 +97,16 @@ export function HostedDetailClient({ coBuyingInfo, joinersList: initialJoinersLi
     if (!confirm(confirmMessage)) return;
     setIsUpdating(true);
     try {
-      const { error } = await supabase.from('co_buyings').update({ status: 'PAYMENT_WAITING' }).eq('id', coBuyingInfo.id);
+      const payDeadline = new Date();
+      payDeadline.setHours(payDeadline.getHours() + 24);
+
+      const { error } = await supabase
+        .from('co_buyings')
+        .update({ 
+          status: 'PAYMENT_WAITING',
+          pay_deadline: payDeadline.toISOString()
+        })
+        .eq('id', coBuyingInfo.id);
       if (error) throw error;
       setToastMessage('모집이 종료되었습니다.');
       setTimeout(() => { window.location.reload(); }, 1000);
