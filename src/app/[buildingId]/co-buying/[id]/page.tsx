@@ -185,11 +185,11 @@ export default async function CoBuyingDetail({ params }: { params: Promise<{ bui
         <ul className="space-y-3 text-[14px] text-gray-600">
           <li className="flex gap-2">
             <span className="flex-shrink-0 mt-0.5 text-blue-500"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg></span>
-            <span>진행 상태가 <strong className="font-medium text-gray-900">입금중</strong>으로 넘어가면 카카오톡 오픈채팅방을 통해 공구주최자에게 입금을 진행해주세요!</span>
+            <span>수량이 모두 모여 <strong className="font-medium text-gray-900">'입금중'</strong>이 되면 24시간 안에 오픈채팅방을 통해 주최자에게 입금을 진행해주세요!</span>
           </li>
           <li className="flex gap-2">
             <span className="flex-shrink-0 mt-0.5 text-blue-500"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><polyline points="3.27 6.96 12 12.01 20.73 6.96" /><line x1="12" y1="22.08" x2="12" y2="12" /></svg></span>
-            <span>상품 수령은 방장이 지정한 지정장소(아파트 로비 등)에서 대면으로 이루어집니다.</span>
+            <span>상품 수령은 주최자가 지정한 지정 장소(아파트 로비 등)에서 비대면으로 이루어집니다.</span>
           </li>
         </ul>
       </div>
