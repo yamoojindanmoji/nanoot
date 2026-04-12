@@ -409,7 +409,7 @@ console.log('update result:', data, error);
         ) : isPaymentWaiting ? (
           <Button
   className="w-full h-[52px] rounded-xl font-bold text-[16px] !bg-black hover:!bg-gray-800 !text-white border-none"
-  onClick={unpaidCount > 0 ? sendAllPaymentNotice : handleMoveToOrder}
+  onClick={unpaidCount > 0 ? sendAllPaymentNotice : handleMoveToPickup}
   disabled={isUpdating}
 >
   {unpaidCount > 0 ? `미입금자 ${unpaidCount}명에게 입금 안내 보내기` : '주문 진행하기'}
