@@ -79,7 +79,7 @@ export function UserProfileClient({
     setIsUploadingImage(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No user found');
+      if (!user) throw new Error('로그인이 필요합니다.');
 
       // 1. Upload to Supabase Storage
       const fileExt = file.name.split('.').pop();
@@ -87,9 +87,14 @@ export function UserProfileClient({
       
       const { error: uploadError } = await supabase.storage
         .from('profile-images')
-        .upload(fileName, file);
+        .upload(fileName, file, {
+          upsert: true
+        });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError);
+        throw new Error(`스토리지 업로드 실패: ${uploadError.message}`);
+      }
 
       // 2. Get Public URL
       const { data: { publicUrl } } = supabase.storage
@@ -102,14 +107,17 @@ export function UserProfileClient({
         .update({ profile_image_url: publicUrl })
         .eq('id', user.id);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Database update error:', updateError);
+        throw new Error(`프로필 정보 갱신 실패: ${updateError.message}`);
+      }
 
       // 4. Update UI
       setProfileImageUrl(publicUrl);
       setToastMessage('프로필 이미지가 성공적으로 변경되었습니다.');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading image:', error);
-      setToastMessage('이미지 업로드에 실패했습니다.');
+      setToastMessage(error.message || '이미지 업로드에 실패했습니다.');
     } finally {
       setIsUploadingImage(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
