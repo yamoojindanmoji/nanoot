@@ -28,16 +28,17 @@ export async function GET(request: Request) {
           const email = user.user_metadata?.email || user.email;
 
           await supabase.from('users').upsert(
-            {
-              id: user.id,
-              email: email,
-              nickname: null,
-              profile_image_url: null,
-              building_id: null,
-              role: 'USER',
-            },
-            { onConflict: 'id', ignoreDuplicates: true }
-          );
+  {
+    id: user.id,
+    email: email,
+    name: '',
+    nickname: '',
+    profile_image_url: null,
+    building_id: null,
+    role: 'USER',
+  },
+  { onConflict: 'id', ignoreDuplicates: true }
+);
 
           return NextResponse.redirect(`${origin}/auth/setup-profile${queryString}`);
         }
