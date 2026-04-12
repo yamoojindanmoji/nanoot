@@ -133,9 +133,9 @@ export function UserProfileClient({
                <Button 
                  className="flex-1 rounded-xl h-12" 
                  onClick={handleUpdateNickname}
-                 isLoading={isLoading}
+                 disabled={isLoading}
                >
-                 저장하기
+                 {isLoading ? '저장 중...' : '저장하기'}
                </Button>
              </div>
           </div>
