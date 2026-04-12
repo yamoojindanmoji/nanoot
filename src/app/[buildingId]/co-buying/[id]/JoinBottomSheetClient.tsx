@@ -221,26 +221,51 @@ export function JoinBottomSheetClient({
       }
 
       // 3. 목표 수량 달성 시 상태 자동 변경 및 입금 마감일 설정 (24시간)
-      const newTotalQuantity = currentQuantity + totalCount;
-      if (newTotalQuantity >= totalQuantity) {
-        const payDeadline = new Date();
-        payDeadline.setHours(payDeadline.getHours() + 24);
+      // props로 받은 currentQuantity 대신 서버에서 새로 조회한 최신 수량(latestCurrentQty)을 사용
+      const { data: latestCBAfterJoin } = await supabase
+        .from('co_buyings')
+        .select('total_quantity, host_quantity')
+        .eq('id', coBuyingId)
+        .single();
+      
+      const { data: latestJoinersAfterJoin } = await supabase
+        .from('joiners')
+        .select('joiner_total_quantity')
+        .eq('co_buying_id', coBuyingId);
 
-        await supabase
-          .from('co_buyings')
-          .update({ 
-            status: 'PAYMENT_WAITING',
-            pay_deadline: payDeadline.toISOString()
-          })
-          .eq('id', coBuyingId);
+      if (latestCBAfterJoin) {
+        const latestHostQty = latestCBAfterJoin.host_quantity || 0;
+        const latestJoinersQty = latestJoinersAfterJoin?.reduce((sum: number, j: any) => sum + j.joiner_total_quantity, 0) || 0;
+        const actualTotalQuantity = latestHostQty + latestJoinersQty;
+
+        if (actualTotalQuantity >= latestCBAfterJoin.total_quantity) {
+          console.log('Target quantity reached! Attempting to change status to PAYMENT_WAITING...');
+          const payDeadline = new Date();
+          payDeadline.setHours(payDeadline.getHours() + 24);
+
+          const { error: statusError } = await supabase
+            .from('co_buyings')
+            .update({ 
+              status: 'PAYMENT_WAITING',
+              pay_deadline: payDeadline.toISOString()
+            })
+            .eq('id', coBuyingId);
+          
+          if (statusError) {
+            console.error('Failed to auto-update status. This might be due to RLS permissions for participants:', statusError);
+            // 참여자 권한 문제일 가능성이 높으므로 에러를 던지지는 않고 로그만 남김 (참여 자체는 성공했으므로)
+          } else {
+            console.log('Status successfully updated to PAYMENT_WAITING');
+          }
+        }
       }
 
       alert('참여가 완료되었습니다!');
       handleClose();
       window.location.reload();
     } catch (err: any) {
-      console.error('Error joining co-buying:', err);
-      alert('참여 신청 중 오류가 발생했습니다. 다시 시도해주세요.');
+      console.error('Error joining co-buying (including status update logic):', err);
+      alert(`참여 신청 중 오류가 발생했습니다: ${err.message || '다시 시도해주세요.'}`);
     } finally {
       setIsSubmitting(false);
     }

@@ -70,6 +70,15 @@ export function HostedDetailClient({ coBuyingInfo, joinersList: initialJoinersLi
     Object.fromEntries(initialJoinersList.map(j => [j.id, j.payStatus]))
   );
   const supabase = createClient();
+  const router = useRouter();
+
+  // 자동 상태 전환 보정: 수량이 다 찼는데 여전히 '모집중'이면 자동으로 '입금중'으로 변경
+  useEffect(() => {
+    if (coBuyingInfo.status === 'RECRUITING' && coBuyingInfo.remainingQuantity <= 0 && !isUpdating) {
+      console.log('Detected full quantity in RECRUITING status. Auto-closing...');
+      handleCloseRecruitment(true); // silent mode
+    }
+  }, [coBuyingInfo.status, coBuyingInfo.remainingQuantity]);
 
   const joinersList = initialJoinersList.map(j => ({ ...j, payStatus: payStatuses[j.id] ?? j.payStatus }));
 
@@ -90,11 +99,13 @@ export function HostedDetailClient({ coBuyingInfo, joinersList: initialJoinersLi
   const unitPrice = coBuyingInfo.totalQuantity > 0 ? Math.floor(coBuyingInfo.totalPrice / coBuyingInfo.totalQuantity) : 0;
   const totalApplicantPay = unitPrice * totalApplicantCount;
 
-  const handleCloseRecruitment = async () => {
+  const handleCloseRecruitment = async (silent = false) => {
     const confirmMessage = coBuyingInfo.remainingQuantity > 0
       ? '정말 모집을 종료하시겠어요?\n남은 수량은 주최자에게 귀속됩니다.'
       : '모집을 종료하시겠습니까? (이후 신청을 받을 수 없습니다.)';
-    if (!confirm(confirmMessage)) return;
+    
+    if (!silent && !confirm(confirmMessage)) return;
+    
     setIsUpdating(true);
     try {
       const payDeadline = new Date();
@@ -107,12 +118,21 @@ export function HostedDetailClient({ coBuyingInfo, joinersList: initialJoinersLi
           pay_deadline: payDeadline.toISOString()
         })
         .eq('id', coBuyingInfo.id);
-      if (error) throw error;
-      setToastMessage('모집이 종료되었습니다.');
-      setTimeout(() => { window.location.reload(); }, 1000);
-    } catch (error) {
-      console.error(error);
-      setToastMessage('처리 중 오류가 발생했습니다.');
+      
+      if (error) {
+        console.error('Manual/Auto close error from Supabase:', error);
+        throw error;
+      }
+
+      if (!silent) setToastMessage('모집이 종료되었습니다.');
+      
+      // 상태 전환 후 확실한 반영을 위해 딜레이 후 새로고침
+      setTimeout(() => { window.location.reload(); }, silent ? 500 : 1000);
+    } catch (error: any) {
+      console.error('Manual close error detailed:', error);
+      if (!silent) {
+        setToastMessage(`처리 중 오류가 발생했습니다: ${error.message || '알 수 없는 에러'}`);
+      }
     } finally {
       setIsUpdating(false);
     }
