@@ -15,6 +15,7 @@ export interface ParticipatedCoBuyingCardProps {
   myTotalPay: number;
   remainingQuantity?: number;
   quantityLabel?: string;
+  payDeadline?: string;
   from?: 'participated' | 'hosted';
 }
 

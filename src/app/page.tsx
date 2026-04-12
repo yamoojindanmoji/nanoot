@@ -72,35 +72,11 @@ export default function Home() {
     }
 
     bId = profile?.building_id || null;
-    const params = new URLSearchParams(window.location.search);
-    const invite = params.get('invite');
-
-    // 초대 파라미터가 있는 경우 홈 화면에서 즉시 처리 (화면 전환 없이)
-    if (invite) {
-      const { data: inviteBuilding } = await supabase
-        .from('buildings')
-        .select('id')
-        .eq('invite_code', invite)
-        .single();
-
-      if (inviteBuilding) {
-        // 사용자 건물 정보 업데이트
-        await supabase
-          .from('users')
-          .update({ building_id: inviteBuilding.id })
-          .eq('id', currentUser.id);
-        
-        bId = inviteBuilding.id;
-        
-        // 주소창에서 invite 파라미터 제거 (히스토리에 남지 않게)
-        const newUrl = window.location.pathname;
-        window.history.replaceState({}, '', newUrl);
-      }
-    }
-
+    
     if (!bId) {
       // 로그인이 되어있지만 여전히 건물이 없는 경우만 설정 페이지로 이동
-      router.replace('/building/setup');
+      // invite 파라미터가 있다면 building/setup 페이지에서 처리하도록 내버려둠
+      router.replace('/building/setup' + window.location.search);
       setIsLoading(false);
       return;
     }

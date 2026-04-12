@@ -220,11 +220,12 @@ function BuildingSetupContent() {
         const { data: building, error: findError } = await supabase
           .from('buildings')
           .select('id')
-          .eq('invite_code', inviteCode)
+          .eq('invite_code', inviteCode.trim())
           .single();
 
         if (findError || !building) {
           console.warn('Invalid invite code:', inviteCode);
+          alert('유효하지 않은 초대 링크입니다. 건물을 직접 선택해주세요.');
           setIsAutoSelecting(false);
           router.replace('/building/setup');
           return;
@@ -246,6 +247,7 @@ function BuildingSetupContent() {
 
         if (updateError) {
           console.error('Error updating user building:', updateError);
+          alert('건물 인증 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
           setIsAutoSelecting(false);
           router.replace('/building/setup');
           return;
