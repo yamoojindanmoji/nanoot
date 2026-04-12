@@ -90,16 +90,24 @@ export function HostedDetailClient({ coBuyingInfo, joinersList: initialJoinersLi
     minute: '2-digit',
     hour12: true,
   });
-const handleMoveToOrder = async () => {
-  if (!confirm('주문을 진행하시겠어요?')) return;
+const handleMoveToPickup = async () => {
+  const location = prompt('수령 장소를 입력해주세요 (예: 1층 로비)');
+  if (!location) return;
+  const dateStr = prompt('수령 날짜와 시간을 입력해주세요 (예: 2026-04-15 18:00)');
+  if (!dateStr) return;
+
   setIsUpdating(true);
   try {
     const { error } = await supabase
       .from('co_buyings')
-      .update({ status: 'ORDER_IN_PROGRESS' })
+      .update({ 
+        status: 'READY_FOR_PICKUP',
+        pickup_location: location,
+        pickup_date: new Date(dateStr).toISOString()
+      })
       .eq('id', coBuyingInfo.id);
     if (error) throw error;
-    setToastMessage('주문이 시작되었습니다.');
+    setToastMessage('나눔 정보가 등록되었습니다.');
     setTimeout(() => { window.location.reload(); }, 1000);
   } catch (error: any) {
     setToastMessage(`오류가 발생했습니다: ${error.message}`);
@@ -406,13 +414,21 @@ console.log('update result:', data, error);
 >
   {unpaidCount > 0 ? `미입금자 ${unpaidCount}명에게 입금 안내 보내기` : '주문 진행하기'}
 </Button>
-        ) : (
-          <Button 
-            className="w-full h-[52px] rounded-xl font-bold text-[16px] !bg-black !text-white opacity-50 border-none" 
-            disabled
-          >
-            {statusLabel[coBuyingInfo.status] || '진행 중'}
-          </Button>
+        ) : coBuyingInfo.status === 'ORDER_IN_PROGRESS' ? (
+  <Button
+    className="w-full h-[52px] rounded-xl font-bold text-[16px] !bg-black hover:!bg-gray-800 !text-white border-none"
+    onClick={handleMoveToPickup}
+    disabled={isUpdating}
+  >
+    나눔 장소/시간 등록하기
+  </Button>
+) : (
+  <Button 
+    className="w-full h-[52px] rounded-xl font-bold text-[16px] !bg-black !text-white opacity-50 border-none" 
+    disabled
+  >
+    {statusLabel[coBuyingInfo.status] || '진행 중'}
+  </Button>
         )}
       </div>
 
