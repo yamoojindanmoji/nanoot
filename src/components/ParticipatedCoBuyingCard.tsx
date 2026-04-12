@@ -31,10 +31,10 @@ const statusConfig: Record<string, { label: string; description: string; colorCl
     colorClass: 'bg-yellow-100 text-yellow-700' 
   },
   ORDER_IN_PROGRESS: { 
-    label: '주문진행', 
-    description: '주문이 진행 중이에요', 
-    colorClass: 'bg-blue-100 text-blue-700' 
-  },
+  label: '주문진행', 
+  description: '주최자가 주문을 진행 중이에요. 수령 날짜, 시간, 장소는 곧 안내드릴게요 📦', 
+  colorClass: 'bg-blue-100 text-blue-700' 
+},
   READY_FOR_PICKUP: { 
     label: '픽업대기', 
     description: '물건이 도착했어요! 수령 장소를 확인하세요', 
