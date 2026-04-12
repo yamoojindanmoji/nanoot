@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { LoginPromptModal } from '@/components/LoginPromptModal';
 import { VerificationRequiredModal } from '@/components/VerificationRequiredModal';
 import { Toast } from '@/components/ui/Toast';
+import { event } from '@/lib/gtag';
 
 export interface ProductOption {
   id: string;
@@ -58,6 +59,7 @@ export function JoinBottomSheetClient({
   }, [supabase]);
 
   const handleOpen = async () => {
+    event('view_co_buying_detail', { co_buying_id: coBuyingId });
     if (isJoined) {
       alert("이미 신청된 공구입니다. '내 공구'에서 신청 내역을 확인하세요.");
       return;
@@ -266,7 +268,11 @@ export function JoinBottomSheetClient({
           }
         }
       }
-
+event('join_complete', { 
+  co_buying_id: coBuyingId,
+  quantity: totalCount,
+  total_pay: totalPay
+});
       alert('참여가 완료되었습니다!');
       handleClose();
       window.location.reload();
