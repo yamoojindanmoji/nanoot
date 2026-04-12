@@ -95,6 +95,11 @@ const handleMoveToPickup = async () => {
   if (!location) return;
   const dateStr = prompt('수령 날짜와 시간을 입력해주세요 (예: 2026-04-15 18:00)');
   if (!dateStr) return;
+  const parsedDate = new Date(dateStr.replace(' ', 'T'));
+  if (isNaN(parsedDate.getTime())) {
+    setToastMessage('날짜 형식이 올바르지 않아요. 예: 2026-04-15 18:00');
+    return;
+  }
 
   setIsUpdating(true);
   try {
@@ -103,7 +108,7 @@ const handleMoveToPickup = async () => {
       .update({ 
         status: 'READY_FOR_PICKUP',
         pickup_location: location,
-        pickup_date: new Date(dateStr).toISOString()
+        pickup_date: parsedDate.toISOString()
       })
       .eq('id', coBuyingInfo.id);
     if (error) throw error;
