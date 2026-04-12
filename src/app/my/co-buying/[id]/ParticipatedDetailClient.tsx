@@ -175,7 +175,14 @@ export function ParticipatedDetailClient({ initialDetails, joinerId, coBuyingInf
   입금하기 (오픈채팅 이동)
 </Button>
         ) : coBuyingInfo.status === 'ORDER_IN_PROGRESS' ? (
-          <Button className="w-full h-[52px] rounded-xl font-bold" disabled>주문 진행 중</Button>
+          <div className="w-full flex flex-col gap-2">
+  <div className="w-full h-[52px] rounded-xl bg-gray-100 flex items-center justify-center">
+    <span className="text-[15px] font-bold text-gray-500">주문 진행 중</span>
+  </div>
+  <p className="text-[13px] text-gray-400 text-center">
+    주최자가 주문 후 수령 날짜, 시간, 장소를 알려드릴 예정이에요 📦
+  </p>
+</div>
         ) : coBuyingInfo.status === 'READY_FOR_PICKUP' ? (
           <Button className="w-full h-[52px] !bg-purple-600 hover:!bg-purple-700 !text-white rounded-xl font-bold">수령 완료</Button>
         ) : (
