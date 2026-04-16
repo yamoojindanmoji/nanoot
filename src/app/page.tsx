@@ -93,21 +93,9 @@ export default function Home() {
       .single();
     setBuilding(bData);
 
-    // 4. Fetch co-buying items
-    const { data: cbItems } = await supabase
-      .from('co_buyings')
-      .select('*, joiners(joiner_total_quantity)')
-      .eq('building_id', bId)
-      .order('created_at', { ascending: false });
-    
-    const itemsWithQuantity = (cbItems || []).map(item => {
-      const hostQuantity = item.host_quantity || 0;
-      const joinersQuantity = item.joiners?.reduce((sum: number, j: any) => sum + (j.joiner_total_quantity || 0), 0) || 0;
-      return {
-        ...item,
-        current_quantity: hostQuantity + joinersQuantity
-      };
-    });
+    // 4. Fetch co-buying items (API route를 통해 서버에서 집계 — RLS 우회)
+    const res = await fetch(`/api/co-buyings-with-qty?buildingId=${bId}`);
+    const { items: itemsWithQuantity = [] } = res.ok ? await res.json() : { items: [] };
     
     // 정렬: 모집중(deadline ASC) → 모집마감(created_at DESC)
     const now = new Date().getTime();
