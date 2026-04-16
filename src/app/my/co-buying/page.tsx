@@ -44,11 +44,11 @@ function MyCoBuyingPageContent() {
               status,
               total_price,
               total_quantity,
+              host_quantity,
               deadline,
               pay_deadline,
               pickup_location,
-              image_url,
-              pickup_location
+              image_url
             )
           `)
           .eq('user_id', user.id)
@@ -64,7 +64,9 @@ function MyCoBuyingPageContent() {
               .select('joiner_total_quantity')
               .eq('co_buying_id', cb.id);
             
-            const currentTotal = allJoiners?.reduce((sum: number, j: any) => sum + j.joiner_total_quantity, 0) || 0;
+            const joinersTotal = allJoiners?.reduce((sum: number, j: any) => sum + j.joiner_total_quantity, 0) || 0;
+            const hostQuantity = cb.host_quantity || 0;
+            const currentTotal = joinersTotal + hostQuantity;
             const remaining = Math.max(0, cb.total_quantity - currentTotal);
 
             return {
