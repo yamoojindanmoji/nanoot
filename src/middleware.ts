@@ -33,7 +33,7 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Public routes: only landing, auth callback, and error page
-  const publicRoutes = ['/', '/auth/callback', '/auth/auth-code-error'];
+  const publicRoutes = ['/', '/auth/callback', '/auth/auth-code-error', '/api/co-buyings-with-qty'];
   const isPublicRoute = publicRoutes.some(
     route => pathname === route || pathname.startsWith(route + '/')
   );
