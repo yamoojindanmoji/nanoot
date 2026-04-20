@@ -86,7 +86,7 @@ export default function Home() {
       .from('buildings')
       .select('name')
       .eq('id', bId)
-      .single();
+      .maybeSingle();
     setBuilding(bData);
 
     // 4. Fetch co-buying items (API route를 통해 서버에서 집계 — RLS 우회)
