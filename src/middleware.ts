@@ -38,8 +38,11 @@ export async function middleware(request: NextRequest) {
     route => pathname === route || pathname.startsWith(route + '/')
   );
 
+  // 공구 상세 페이지는 비회원도 읽기 가능: /[buildingId]/co-buying/[id]
+  const isPublicCoBuyingDetail = /^\/[^/]+\/co-buying\/[^/]+$/.test(pathname);
+
   // Non-authenticated users can only access public routes → redirect to landing
-  if (!user && !isPublicRoute) {
+  if (!user && !isPublicRoute && !isPublicCoBuyingDetail) {
     const url = request.nextUrl.clone()
     url.pathname = '/'
     return NextResponse.redirect(url)

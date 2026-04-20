@@ -17,10 +17,12 @@ export function LoginPromptModal({ isOpen, onClose }: LoginPromptModalProps) {
 
   const handleLogin = async () => {
     const supabase = createClient();
+    // 현재 공구 상세 페이지 URL을 next 파라미터로 전달, 로그인 후 복귀용
+    const nextPath = encodeURIComponent(window.location.pathname);
     await supabase.auth.signInWithOAuth({
       provider: 'kakao',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${nextPath}`,
       },
     });
   };

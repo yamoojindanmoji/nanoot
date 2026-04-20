@@ -99,7 +99,7 @@ export default function Home() {
     
     // 정렬: 모집중(deadline ASC) → 모집마감(created_at DESC)
     const now = new Date().getTime();
-    const sorted = itemsWithQuantity.sort((a, b) => {
+    const sorted = itemsWithQuantity.sort((a: any, b: any) => {
       const aRecruiting = a.status === 'RECRUITING' && new Date(a.deadline).getTime() > now;
       const bRecruiting = b.status === 'RECRUITING' && new Date(b.deadline).getTime() > now;
       
