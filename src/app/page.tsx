@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { CoBuyingCard } from '@/components/CoBuyingCard';
-import { GuestLanding } from '@/components/GuestLanding';
 import { CATEGORIES } from '@/lib/categories';
 import Link from 'next/link';
 import { Bell, Search } from 'lucide-react';
@@ -17,7 +16,6 @@ export default function Home() {
   const [items, setItems] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState('전체');
   const [isLoading, setIsLoading] = useState(true);
-  const [showGuestLanding, setShowGuestLanding] = useState(false);
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
 
   // Drag interaction for PC
@@ -37,48 +35,46 @@ export default function Home() {
     const { data: { user: currentUser } } = await supabase.auth.getUser();
     setUser(currentUser);
 
-    // 2. Resolve buildingId — only for authenticated users
-    if (!currentUser) {
-      // Not logged in → always show landing, never show home content
-      setShowGuestLanding(true);
-      setIsLoading(false);
-      return;
-    }
-
+    // 2. Resolve buildingId — only for authenticated users OR default public building for guests
     let bId: string | null = null;
 
-    // --- 사용자 프로필 조회 (재시도 로직 포함) ---
-    let profile = null;
-    let retryCount = 0;
-    const MAX_RETRIES = 2;
+    if (!currentUser) {
+      // 비회원은 기본 건물(장안뉴시티) 공구 리스트 노출
+      bId = 'b1622719-ed13-4ed4-b40e-ebbcbe9e920c';
+    } else {
+      // --- 사용자 프로필 조회 (재시도 로직 포함) ---
+      let profile = null;
+      let retryCount = 0;
+      const MAX_RETRIES = 2;
 
-    while (retryCount <= MAX_RETRIES) {
-      const { data: profiles } = await supabase
-        .from('users')
-        .select('building_id')
-        .eq('id', currentUser.id);
+      while (retryCount <= MAX_RETRIES) {
+        const { data: profiles } = await supabase
+          .from('users')
+          .select('building_id')
+          .eq('id', currentUser.id);
+        
+        if (profiles && profiles.length > 0) {
+          profile = profiles[0];
+          break;
+        }
+
+        if (retryCount < MAX_RETRIES) {
+          retryCount++;
+          await new Promise(resolve => setTimeout(resolve, 500)); // 0.5초 대기 후 재시도
+        } else {
+          break;
+        }
+      }
+
+      bId = profile?.building_id || null;
       
-      if (profiles && profiles.length > 0) {
-        profile = profiles[0];
-        break;
+      if (!bId) {
+        // 로그인이 되어있지만 여전히 건물이 없는 경우만 설정 페이지로 이동
+        // invite 파라미터가 있다면 building/setup 페이지에서 처리하도록 내버려둠
+        router.replace('/building/setup' + window.location.search);
+        setIsLoading(false);
+        return;
       }
-
-      if (retryCount < MAX_RETRIES) {
-        retryCount++;
-        await new Promise(resolve => setTimeout(resolve, 500)); // 0.5초 대기 후 재시도
-      } else {
-        break;
-      }
-    }
-
-    bId = profile?.building_id || null;
-    
-    if (!bId) {
-      // 로그인이 되어있지만 여전히 건물이 없는 경우만 설정 페이지로 이동
-      // invite 파라미터가 있다면 building/setup 페이지에서 처리하도록 내버려둠
-      router.replace('/building/setup' + window.location.search);
-      setIsLoading(false);
-      return;
     }
 
     setBuildingId(bId);
@@ -160,9 +156,7 @@ export default function Home() {
   };
 
 
-  if (showGuestLanding) {
-    return <GuestLanding />;
-  }
+
   const filteredItems = items.filter(item => {
     if (activeTab === '전체') return true;
     return item.category === activeTab;
