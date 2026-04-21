@@ -55,12 +55,12 @@ export function LoginPromptModal({ isOpen, onClose }: LoginPromptModalProps) {
           </div>
 
           <h3 className="text-[22px] font-bold text-gray-900 mb-2 leading-tight">
-            로그인이 필요해요
+            같은 건물 이웃이 맞나요? 🏠
           </h3>
           
           <p className="text-gray-500 text-[15px] leading-relaxed mb-10">
-            공구 신청을 하시려면 로그인이 필요합니다. <br />
-            카카오로 3초 만에 시작해보세요!
+            신청하려면 카카오 로그인이 필요해요. <br />
+            가입하면 장안뉴시티 공구를 바로 신청할 수 있어요!
           </p>
 
           <div className="flex flex-col gap-3 w-full pb-safe">
