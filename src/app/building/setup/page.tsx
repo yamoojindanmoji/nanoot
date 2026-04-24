@@ -5,11 +5,14 @@ export const dynamic = 'force-dynamic';
 import { Suspense, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
 
 // ── 건물 검색 뷰 ────────────────────────────────────────────────────
 function BuildingSearchView() {
   const router = useRouter();
   const supabase = createClient();
+  const [keyword, setKeyword] = useState('');
   const [buildings, setBuildings] = useState<{ id: string; name: string; address: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSelecting, setIsSelecting] = useState<string | null>(null);
@@ -44,6 +47,11 @@ function BuildingSearchView() {
     window.location.href = '/';
   };
 
+  const filteredBuildings = buildings.filter(b => 
+    b.name.toLowerCase().includes(keyword.toLowerCase()) || 
+    b.address.toLowerCase().includes(keyword.toLowerCase())
+  );
+
   return (
     <div className="flex flex-col flex-1 px-6 pt-12 pb-10 overflow-y-auto">
       <header className="flex items-center mb-8">
@@ -63,20 +71,27 @@ function BuildingSearchView() {
         거주 중인 건물을 선택해주세요.
       </p>
 
-
+      <form className="flex gap-2 mb-8" onSubmit={(e) => e.preventDefault()}>
+        <Input
+          placeholder="건물명 검색 (예: 나눗아파트)"
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
+          className="flex-1"
+        />
+      </form>
 
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
           <div className="text-center py-10 text-gray-400 text-sm">
             불러오는 중...
           </div>
-        ) : buildings.length === 0 ? (
+        ) : filteredBuildings.length === 0 ? (
           <div className="text-center py-10 text-gray-400 text-sm">
-            등록된 건물이 없습니다.
+            {keyword ? '검색 결과가 없습니다.' : '등록된 건물이 없습니다.'}
           </div>
         ) : (
           <div className="flex flex-col gap-3">
-            {buildings.map((b) => (
+            {filteredBuildings.map((b) => (
               <button
                 key={b.id}
                 onClick={() => handleSelectBuilding(b.id)}
