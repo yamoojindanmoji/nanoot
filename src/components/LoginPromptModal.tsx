@@ -61,6 +61,7 @@ export function LoginPromptModal({ isOpen, onClose, buildingName }: LoginPromptM
           
           <p className="text-gray-500 text-[15px] font-medium leading-relaxed mb-10">
             신청하려면 카카오 로그인이 필요해요. <br />
+            같은 건물 이웃 확인 및 공구 신청 내역 관리를 위해 사용돼요. <br />
             가입하면 {buildingName || '우리 건물'} 공구를 바로 신청할 수 있어요!
           </p>
 
