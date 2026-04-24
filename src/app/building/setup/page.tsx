@@ -23,7 +23,13 @@ function BuildingSearchView() {
         .from('buildings')
         .select('id, name, address')
         .order('name');
-      if (!error && data) setBuildings(data);
+      
+      if (error) {
+        console.error('Error fetching buildings:', error);
+      } else if (data) {
+        console.log('Fetched buildings:', data);
+        setBuildings(data);
+      }
       setIsLoading(false);
     };
     fetchBuildings();
