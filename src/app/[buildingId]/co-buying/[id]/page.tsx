@@ -109,19 +109,12 @@ export default async function CoBuyingDetail({ params }: { params: Promise<{ bui
     <div className="flex flex-col flex-1 pb-24 bg-gray-50 relative min-h-screen">
 
       {/* ---------- 1. 고정 헤더 (항상 노출) ---------- */}
-      <header className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[440px] z-20 px-4 py-3 flex items-center justify-between bg-transparent">
-        <Link href="/" className="w-10 h-10 bg-black/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/40 transition-colors">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <header className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[440px] z-20 px-4 py-3 flex items-center justify-start bg-transparent">
+        <Link href="/" className="w-9 h-9 bg-gray-900/60 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-gray-900/80 transition-colors">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </Link>
-        <button className="w-10 h-10 bg-black/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/40 transition-colors">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="1" />
-            <circle cx="12" cy="5" r="1" />
-            <circle cx="12" cy="19" r="1" />
-          </svg>
-        </button>
       </header>
 
       {/* ---------- 2. 썸네일 영역 (헤더 높이만큼 아래로) ---------- */}
