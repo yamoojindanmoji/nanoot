@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { CoBuyingCard } from '@/components/CoBuyingCard';
+import { GuestLanding } from '@/components/GuestLanding';
 import { CATEGORIES } from '@/lib/categories';
 import Link from 'next/link';
 import { Bell, Search } from 'lucide-react';
@@ -16,6 +17,7 @@ export default function Home() {
   const [items, setItems] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState('전체');
   const [isLoading, setIsLoading] = useState(true);
+  const [showGuestLanding, setShowGuestLanding] = useState(false);
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
 
   // Drag interaction for PC
@@ -39,8 +41,10 @@ export default function Home() {
     let bId: string | null = null;
 
     if (!currentUser) {
-      // 비회원은 기본 건물(장안뉴시티) 공구 리스트 노출
-      bId = 'b1622719-ed13-4ed4-b40e-ebbcbe9e920c';
+      // 비인증 사용자는 항상 온보딩 → 건물 선택 플로우
+      setShowGuestLanding(true);
+      setIsLoading(false);
+      return;
     } else {
       // --- 사용자 프로필 조회 (재시도 로직 포함) ---
       let profile = null;
@@ -156,6 +160,10 @@ export default function Home() {
   };
 
 
+
+  if (showGuestLanding) {
+    return <GuestLanding />;
+  }
 
   const filteredItems = items.filter(item => {
     if (activeTab === '전체') return true;

@@ -307,6 +307,7 @@ event('join_complete', {
       <LoginPromptModal 
         isOpen={isLoginModalOpen} 
         onClose={() => setIsLoginModalOpen(false)} 
+        buildingName={buildingName}
       />
 
       {/* Verification Required Modal */}

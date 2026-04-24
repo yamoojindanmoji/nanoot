@@ -1,7 +1,9 @@
 'use client';
 import { createClient } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation';
 
 export function Intro() {
+  const router = useRouter();
   const handleKakaoLogin = async () => {
     const supabase = createClient();
     const currentParams = window.location.search;
@@ -43,6 +45,13 @@ export function Intro() {
             <path d="M11 0C4.92487 0 0 3.86873 0 8.64167C0 11.7589 2.05389 14.4891 5.25301 16.0336C5.02982 16.7589 4.316 19.3486 4.26938 19.5303C4.22276 19.7121 4.37257 19.6894 4.54226 19.5761C4.7825 19.412 8.35474 16.9205 9.17647 16.3268C9.76993 16.4252 10.3789 16.4756 11 16.4756C17.0751 16.4756 22 12.6069 22 7.83398C22 3.06103 17.0751 0 11 0Z" fill="black"/>
           </svg>
           카카오로 3초만에 시작하기
+        </button>
+
+        <button
+          onClick={() => router.push('/building/setup')}
+          className="w-full h-[52px] bg-transparent text-gray-500 font-medium rounded-xl text-[15px] flex items-center justify-center mt-2 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+        >
+          먼저 둘러보기
         </button>
 
         {/* Terms */}

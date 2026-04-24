@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Image from 'next/image';
-import { PWAInstallModal } from './PWAInstallModal';
+import { useRouter } from 'next/navigation';
 
 interface OnboardingProps {
   onComplete: () => void;
@@ -62,9 +62,9 @@ const slides = [
 ];
 
 export function Onboarding({ onComplete }: OnboardingProps) {
+  const router = useRouter();
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
 
   const scrollNext = useCallback(() => {
     if (emblaApi) emblaApi.scrollNext();
@@ -83,6 +83,11 @@ export function Onboarding({ onComplete }: OnboardingProps) {
   }, [emblaApi, onSelect]);
 
   const isLastSlide = selectedIndex === slides.length - 1;
+
+  const handleComplete = () => {
+    onComplete();
+    router.push('/building/setup');
+  };
 
   return (
     <div className="fixed inset-0 z-[100] bg-white flex flex-col pt-[max(env(safe-area-inset-top),48px)] pb-[max(env(safe-area-inset-bottom),32px)]">
@@ -160,7 +165,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
           {!isLastSlide ? (
             <>
               <button
-                onClick={onComplete}
+                onClick={handleComplete}
                 className="w-[100px] bg-gray-100 text-gray-500 font-semibold rounded-xl text-[16px] active:bg-gray-200 transition-colors"
               >
                 스킵
@@ -175,29 +180,21 @@ export function Onboarding({ onComplete }: OnboardingProps) {
           ) : (
             <>
               <button
-                onClick={onComplete}
+                onClick={handleComplete}
                 className="w-[100px] bg-gray-100 text-gray-500 font-semibold rounded-xl text-[16px] active:bg-gray-200 transition-colors"
               >
                 스킵
               </button>
               <button
-                onClick={() => setIsInstallModalOpen(true)}
+                onClick={handleComplete}
                 className="flex-1 bg-[#B9F115] text-black font-bold rounded-xl text-[16px] hover:bg-[#A3E635] active:bg-[#84cc16] transition-colors"
               >
-                홈화면에 추가하기
+                건물 선택하기
               </button>
             </>
           )}
         </div>
       </div>
-
-      <PWAInstallModal 
-        isOpen={isInstallModalOpen}
-        onClose={() => {
-          setIsInstallModalOpen(false);
-          onComplete();
-        }}
-      />
     </div>
   );
 }

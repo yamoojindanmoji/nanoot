@@ -8,9 +8,10 @@ import { createClient } from '@/lib/supabase/client';
 interface LoginPromptModalProps {
   isOpen: boolean;
   onClose: () => void;
+  buildingName?: string;
 }
 
-export function LoginPromptModal({ isOpen, onClose }: LoginPromptModalProps) {
+export function LoginPromptModal({ isOpen, onClose, buildingName }: LoginPromptModalProps) {
   const router = useRouter();
 
   if (!isOpen) return null;
@@ -60,7 +61,7 @@ export function LoginPromptModal({ isOpen, onClose }: LoginPromptModalProps) {
           
           <p className="text-gray-500 text-[15px] leading-relaxed mb-10">
             신청하려면 카카오 로그인이 필요해요. <br />
-            가입하면 장안뉴시티 공구를 바로 신청할 수 있어요!
+            가입하면 {buildingName || '우리 건물'} 공구를 바로 신청할 수 있어요!
           </p>
 
           <div className="flex flex-col gap-3 w-full pb-safe">

@@ -2,45 +2,44 @@
 
 export const dynamic = 'force-dynamic';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
 
 // ── 건물 검색 뷰 ────────────────────────────────────────────────────
 function BuildingSearchView() {
   const router = useRouter();
   const supabase = createClient();
-  const [keyword, setKeyword] = useState('');
   const [buildings, setBuildings] = useState<{ id: string; name: string; address: string }[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSelecting, setIsSelecting] = useState<string | null>(null);
 
-  const handleSearch = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!keyword.trim()) return;
-    setIsSearching(true);
-    const { data, error } = await supabase
-      .from('buildings')
-      .select('id, name, address')
-      .ilike('name', `%${keyword}%`);
-    if (!error && data) setBuildings(data);
-    setIsSearching(false);
-  };
+  useEffect(() => {
+    const fetchBuildings = async () => {
+      const { data, error } = await supabase
+        .from('buildings')
+        .select('id, name, address')
+        .order('name');
+      if (!error && data) setBuildings(data);
+      setIsLoading(false);
+    };
+    fetchBuildings();
+  }, [supabase]);
 
   /** 건물을 선택하면 코드 입력 없이 바로 building_id 업데이트 후 홈으로 이동 */
   const handleSelectBuilding = async (buildingId: string) => {
     setIsSelecting(buildingId);
+    
+    // 선택한 건물을 localStorage에 저장 (비회원/회원 공통)
+    localStorage.setItem('last_browsed_building_id', buildingId);
+
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      router.replace('/');
-      return;
+    if (user) {
+      await supabase
+        .from('users')
+        .update({ building_id: buildingId })
+        .eq('id', user.id);
     }
-    await supabase
-      .from('users')
-      .update({ building_id: buildingId })
-      .eq('id', user.id);
 
     window.location.href = '/';
   };
@@ -61,31 +60,19 @@ function BuildingSearchView() {
       <h1 className="text-2xl font-bold mb-2">어디에 거주하시나요?</h1>
       <p className="text-gray-500 mb-8 text-sm leading-relaxed">
         이웃과 함께하는 공동구매를 위해<br />
-        거주 중인 건물을 검색해주세요.
+        거주 중인 건물을 선택해주세요.
       </p>
 
-      <form onSubmit={handleSearch} className="flex gap-2 mb-8">
-        <Input
-          placeholder="건물명 검색 (예: 나눗아파트)"
-          value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
-          onFocus={(e) => {
-            e.preventDefault();
-            setTimeout(() => {
-              window.scrollTo(0, 0);
-            }, 100);
-          }}
-          className="flex-1"
-        />
-        <Button type="submit" disabled={isSearching} className="w-16">
-          검색
-        </Button>
-      </form>
+
 
       <div className="flex-1 overflow-y-auto">
-        {buildings.length === 0 ? (
+        {isLoading ? (
           <div className="text-center py-10 text-gray-400 text-sm">
-            {isSearching ? '검색 중...' : '검색 결과가 없습니다.'}
+            불러오는 중...
+          </div>
+        ) : buildings.length === 0 ? (
+          <div className="text-center py-10 text-gray-400 text-sm">
+            등록된 건물이 없습니다.
           </div>
         ) : (
           <div className="flex flex-col gap-3">
