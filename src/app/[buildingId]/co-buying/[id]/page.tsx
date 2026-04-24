@@ -126,8 +126,8 @@ export default async function CoBuyingDetail({ params }: { params: Promise<{ bui
             <span>{getCategoryEmoji(detail.category)}</span>
             {detail.category}
           </span>
-          <span className="text-[13px] text-gray-400 flex items-center gap-1">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+          <span className="text-[14px] font-medium text-gray-500 flex items-center gap-1.5">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
             {new Date(detail.deadline).toLocaleDateString()} 마감
           </span>
         </div>
