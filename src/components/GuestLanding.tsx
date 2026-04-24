@@ -17,6 +17,10 @@ export function GuestLanding() {
     );
   }
 
-  // 온보딩 완료 후 — 건물 선택 페이지로 이동 (실제로는 Onboarding 내부에서 처리)
-  return null;
+  // 온보딩 완료 후 건물 선택 페이지로 이동하는 동안 표시할 로딩 상태
+  return (
+    <div className="flex-1 flex items-center justify-center bg-white">
+      <div className="text-gray-400 text-sm">페이지 이동 중...</div>
+    </div>
+  );
 }
