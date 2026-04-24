@@ -20,13 +20,24 @@ export async function generateMetadata(
 
   const buildingName = (detailData?.building as any)?.name || '우리 건물';
   const title = detailData?.title || '공동구매';
+  const imageUrl = (detailData as any)?.image_url || '';
 
   return {
-    title: `${buildingName} 공동구매`,
+    title: {
+      absolute: `${buildingName} 공동구매`,
+    },
     description: `${title} - 이웃과 함께 나누는 즐거움`,
     openGraph: {
       title: `${buildingName} 공동구매`,
       description: title,
+      images: imageUrl ? [{ url: imageUrl }] : [],
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${buildingName} 공동구매`,
+      description: title,
+      images: imageUrl ? [imageUrl] : [],
     }
   };
 }
