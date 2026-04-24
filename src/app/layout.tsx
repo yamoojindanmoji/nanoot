@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "나눗 - 우리 건물 공동구매",
-  description: "이웃과 함께하는 스마트 공동구매 서비스",
+  title: "나눗 - 이웃과 함께하는 공동구매",
+  description: "우리 건물 이웃과 함께하는 스마트 공동구매 서비스",
 };
 
 export const viewport = {

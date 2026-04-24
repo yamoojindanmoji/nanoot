@@ -4,6 +4,32 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { getCategoryEmoji } from '@/lib/categories';
 import { JoinBottomSheetClient } from './JoinBottomSheetClient';
+import { Metadata } from 'next';
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ buildingId: string, id: string }> }
+): Promise<Metadata> {
+  const { id } = await params;
+  const adminSupabase = await createAdminClient();
+  
+  const { data: detailData } = await adminSupabase
+    .from('co_buyings')
+    .select('title, building:building_id (name)')
+    .eq('id', id)
+    .single();
+
+  const buildingName = (detailData?.building as any)?.name || '우리 건물';
+  const title = detailData?.title || '공동구매';
+
+  return {
+    title: `${buildingName} 공동구매`,
+    description: `${title} - 이웃과 함께 나누는 즐거움`,
+    openGraph: {
+      title: `${buildingName} 공동구매`,
+      description: title,
+    }
+  };
+}
 
 export default async function CoBuyingDetail({ params }: { params: Promise<{ buildingId: string, id: string }> }) {
   const { buildingId, id } = await params;
