@@ -23,9 +23,9 @@ export function GuestPlaceholder({ title, description }: GuestPlaceholderProps) 
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-10 mt-20 text-center gap-6">
-      <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-2">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 text-center gap-8 animate-in fade-in duration-500">
+      <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-2">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
           <circle cx="12" cy="7" r="4" />
         </svg>
