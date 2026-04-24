@@ -8,6 +8,7 @@ import { UserProfileClient } from './UserProfileClient';
 import { NotificationToggle } from './NotificationToggle';
 import { Info, HelpCircle, LogOut, ChevronRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { GuestPlaceholder } from '@/components/GuestPlaceholder';
 
 export default function MyPage() {
   const [user, setUser] = useState<any>(null);
@@ -90,7 +91,17 @@ export default function MyPage() {
   }
 
   if (!user) {
-    return null;
+    return (
+      <div className="flex flex-col flex-1 pb-20 bg-gray-50 min-h-[100dvh]">
+        <header className="sticky top-0 bg-white/80 backdrop-blur-md z-10 px-4 py-4 flex items-center justify-center border-b border-gray-100">
+          <h1 className="text-lg font-bold text-gray-900">마이나눗</h1>
+        </header>
+        <GuestPlaceholder 
+          title="로그인이 필요해요" 
+          description={"마이나눗에서는 나의 프로필과\n계정 설정을 관리할 수 있어요."} 
+        />
+      </div>
+    );
   }
 
   const isBuildingVerified = !!profile?.building_id;

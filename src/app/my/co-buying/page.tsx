@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { GuestPlaceholder } from '@/components/GuestPlaceholder';
 
 function MyCoBuyingPageContent() {
   const searchParams = useSearchParams();
@@ -144,7 +145,17 @@ function MyCoBuyingPageContent() {
 
 
   if (!user) {
-    return null;
+    return (
+      <div className="flex flex-col flex-1 pb-20 bg-gray-50 min-h-[100dvh]">
+        <header className="sticky top-0 bg-white z-20 flex flex-col items-center justify-center border-b border-gray-100">
+          <h1 className="text-[17px] font-bold text-gray-900 py-4">내 공구</h1>
+        </header>
+        <GuestPlaceholder 
+          title="로그인이 필요해요" 
+          description={"내 공구에서는 내가 참여하거나\n주최한 공구 목록을 확인할 수 있어요."} 
+        />
+      </div>
+    );
   }
 
   const isEmpty = ongoingItems.length === 0 && finishedItems.length === 0;

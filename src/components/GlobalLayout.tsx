@@ -39,16 +39,12 @@ export function GlobalLayout({ children }: { children: React.ReactNode }) {
   const isHome = pathname === '/' || pathname.match(/^\/[0-9a-f-]{36}$/);
 
   const handleFabClick = () => {
-    if (!isLoggedIn) {
-      router.push('/');
+    if (isLoggedIn && userRole === 'ADMIN') {
+      router.push('/admin/co-buying/new');
       return;
     }
     
-    if (userRole === 'ADMIN') {
-      router.push('/admin/co-buying/new');
-    } else {
-      setIsBottomSheetOpen(true);
-    }
+    setIsBottomSheetOpen(true);
   };
 
   return (

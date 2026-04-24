@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/Input';
 import { X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { Toast } from '@/components/ui/Toast';
+import { LoginPromptModal } from '@/components/LoginPromptModal';
 
 interface RequestCoBuyingBottomSheetProps {
   isOpen: boolean;
@@ -30,6 +31,20 @@ export function RequestCoBuyingBottomSheet({ isOpen, onClose }: RequestCoBuyingB
     }
   }, [isOpen]);
 
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [buildingName, setBuildingName] = useState('');
+
+  useEffect(() => {
+    const fetchBuildingName = async () => {
+      const bId = localStorage.getItem('last_browsed_building_id');
+      if (bId) {
+        const { data } = await supabase.from('buildings').select('name').eq('id', bId).maybeSingle();
+        if (data) setBuildingName(data.name);
+      }
+    };
+    if (isOpen) fetchBuildingName();
+  }, [isOpen, supabase]);
+
   const handleSubmit = async () => {
     if (isSubmittingRef.current) return;
 
@@ -38,15 +53,15 @@ export function RequestCoBuyingBottomSheet({ isOpen, onClose }: RequestCoBuyingB
       return;
     }
 
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setIsLoginModalOpen(true);
+      return;
+    }
+
     isSubmittingRef.current = true;
     setIsSubmitting(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        alert('로그인이 필요합니다.');
-        return;
-      }
-
       let buildingId: string | null = null;
       const cookies = document.cookie.split('; ');
       const guestBuildingCookie = cookies.find(row => row.startsWith('guest_building_id='));
@@ -159,6 +174,12 @@ export function RequestCoBuyingBottomSheet({ isOpen, onClose }: RequestCoBuyingB
       <Toast 
         message={toastMessage} 
         onClose={() => setToastMessage('')} 
+      />
+
+      <LoginPromptModal 
+        isOpen={isLoginModalOpen} 
+        onClose={() => setIsLoginModalOpen(false)}
+        buildingName={buildingName}
       />
     </>
   );
