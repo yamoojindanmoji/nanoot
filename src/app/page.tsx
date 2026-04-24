@@ -41,10 +41,14 @@ export default function Home() {
     let bId: string | null = null;
 
     if (!currentUser) {
-      // 비인증 사용자는 항상 온보딩 → 건물 선택 플로우
-      setShowGuestLanding(true);
-      setIsLoading(false);
-      return;
+      // 로컬 스토리지에서 마지막으로 본 건물 ID 확인
+      bId = localStorage.getItem('last_browsed_building_id');
+      if (!bId) {
+        // 건물이 없으면 온보딩 띄움
+        setShowGuestLanding(true);
+        setIsLoading(false);
+        return;
+      }
     } else {
       // --- 사용자 프로필 조회 (재시도 로직 포함) ---
       let profile = null;
