@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'buildingId is required' }, { status: 400 });
   }
 
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
 
   // 1. co_buyings 조회
   const { data: cbItems, error } = await supabase

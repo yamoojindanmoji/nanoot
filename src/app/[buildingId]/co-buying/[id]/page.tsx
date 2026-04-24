@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
@@ -7,10 +7,10 @@ import { JoinBottomSheetClient } from './JoinBottomSheetClient';
 
 export default async function CoBuyingDetail({ params }: { params: Promise<{ buildingId: string, id: string }> }) {
   const { buildingId, id } = await params;
+  const adminSupabase = await createAdminClient();
   const supabase = await createClient();
-  await supabase.auth.getUser();
-
-  const { data: detailData, error } = await supabase
+  
+  const { data: detailData, error } = await adminSupabase
     .from('co_buyings')
     .select(`
       *,
@@ -25,7 +25,7 @@ export default async function CoBuyingDetail({ params }: { params: Promise<{ bui
   }
 
   // 실제 참여 수량 집계
-  const { data: allJoiners } = await supabase
+  const { data: allJoiners } = await adminSupabase
     .from('joiners')
     .select('joiner_total_quantity')
     .eq('co_buying_id', id);
@@ -45,7 +45,7 @@ export default async function CoBuyingDetail({ params }: { params: Promise<{ bui
     thumbnailUrl: detailData.image_url || '',
   };
 
-  const { data: options } = await supabase
+  const { data: options } = await adminSupabase
     .from('product_options')
     .select('*')
     .eq('co_buying_id', id);

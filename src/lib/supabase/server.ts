@@ -19,10 +19,22 @@ export const createClient = async () => {
             )
           } catch {
             // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
           }
         },
+      },
+    }
+  )
+}
+
+// RLS를 우회하기 위한 어드민 클라이언트 (서버 전용)
+export const createAdminClient = async () => {
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() { return [] },
+        setAll() {},
       },
     }
   )
