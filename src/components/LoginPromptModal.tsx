@@ -59,7 +59,7 @@ export function LoginPromptModal({ isOpen, onClose, buildingName }: LoginPromptM
             같은 건물 이웃이 맞나요? 🏠
           </h3>
           
-          <p className="text-gray-500 text-[15px] leading-relaxed mb-10">
+          <p className="text-gray-500 text-[15px] font-medium leading-relaxed mb-10">
             신청하려면 카카오 로그인이 필요해요. <br />
             가입하면 {buildingName || '우리 건물'} 공구를 바로 신청할 수 있어요!
           </p>
@@ -67,10 +67,10 @@ export function LoginPromptModal({ isOpen, onClose, buildingName }: LoginPromptM
           <div className="flex flex-col gap-3 w-full pb-safe">
             <Button 
               onClick={handleLogin}
-              className="w-full h-15 bg-[#FEE500] text-black hover:bg-[#F4DC00] border-none font-bold text-[16px] rounded-2xl flex items-center justify-center gap-2"
+              className="w-full h-15 bg-[#FEE500] text-[#3C1E1E] hover:bg-[#FADA0A] border-none font-bold text-[16px] rounded-2xl flex items-center justify-center gap-2"
             >
               <svg width="22" height="20" viewBox="0 0 22 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M11 0C4.92487 0 0 3.86873 0 8.64167C0 11.7589 2.05389 14.4891 5.25301 16.0336C5.02982 16.7589 4.316 19.3486 4.26938 19.5303C4.22276 19.7121 4.37257 19.6894 4.54226 19.5761C4.7825 19.412 8.35474 16.9205 9.17647 16.3268C9.76993 16.4252 10.3789 16.4756 11 16.4756C17.0751 16.4756 22 12.6069 22 7.83398C22 3.06103 17.0751 0 11 0Z" fill="black"/>
+                <path d="M11 0C4.92487 0 0 3.86873 0 8.64167C0 11.7589 2.05389 14.4891 5.25301 16.0336C5.02982 16.7589 4.316 19.3486 4.26938 19.5303C4.22276 19.7121 4.37257 19.6894 4.54226 19.5761C4.7825 19.412 8.35474 16.9205 9.17647 16.3268C9.76993 16.4252 10.3789 16.4756 11 16.4756C17.0751 16.4756 22 12.6069 22 7.83398C22 3.06103 17.0751 0 11 0Z" fill="#3C1E1E"/>
               </svg>
               카카오로 시작하기
             </Button>

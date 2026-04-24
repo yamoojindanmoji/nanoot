@@ -31,8 +31,8 @@ export function GuestPlaceholder({ title, description }: GuestPlaceholderProps) 
         </svg>
       </div>
       <div className="flex flex-col gap-2">
-        <h2 className="text-xl font-bold text-gray-900">{title}</h2>
-        <p className="text-gray-500 font-medium whitespace-pre-wrap leading-relaxed">
+        <h2 className="text-[22px] font-bold text-gray-900">{title}</h2>
+        <p className="text-[15px] font-medium text-gray-500 whitespace-pre-wrap leading-relaxed">
           {description}
         </p>
       </div>
